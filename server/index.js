@@ -11,6 +11,8 @@ import cmsRoutes from './routes/cms.js';
 import customersRoutes from './routes/customers.js';
 import returnsRoutes from './routes/returns.js';
 import financeRoutes from './routes/finance.js';
+import publicRoutes from './routes/public.js';
+import dashboardRoutes from './routes/dashboard.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -31,6 +33,8 @@ app.use('/api/cms', cmsRoutes);
 app.use('/api/customers', customersRoutes);
 app.use('/api/returns', returnsRoutes);
 app.use('/api/finance', financeRoutes);
+app.use('/api/public', publicRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

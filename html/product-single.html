@@ -268,7 +268,7 @@
                                 <ol class="breadcrumb">
                                     <li class="breadcrumb-item"><a href="./">Home</a></li>
                                     <li class="breadcrumb-item"><a href="products.html">Products</a></li>
-                                    <li class="breadcrumb-item active" aria-current="page">Chic Aura Crop Top</li>
+                                    <li class="breadcrumb-item active" aria-current="page" id="product-breadcrumb">Chic Aura Crop Top</li>
                                 </ol>
                             </nav>
                         </div>
@@ -328,20 +328,20 @@
                             <div class="product-single-info-content">
                                 <!-- Product Single title Start -->
                                 <div class="product-single-title wow fadeInUp">
-                                    <h1>Chic Aura Crop Top</h1>
-                                    <span>Summer Collection</span>
+                                    <h1 id="product-title">Chic Aura Crop Top</h1>
+                                    <span id="product-category">Summer Collection</span>
                                 </div>
                                 <!-- Product Single title End -->
 
                                 <!-- Product Single Description Start -->
                                 <div class="product-single-description wow fadeInUp">
-                                    <p>Upgrade your everyday style with the Chic Aura Crop Top, a perfect blend of modern fashion, comfort, and confidence.</p>
+                                    <p id="product-description">Upgrade your everyday style with the Chic Aura Crop Top, a perfect blend of modern fashion, comfort, and confidence.</p>
                                 </div>
                                 <!-- Product Single Description End -->
 
                                 <!-- Product Single Price Start -->
                                 <div class="product-single-price wow fadeInUp" data-wow-delay="0.2s">
-                                    <h2>$35.00 <sub>$40.00</sub></h2>
+                                    <h2 id="product-price">$35.00 <sub>$40.00</sub></h2>
                                     <span>Inclusive of all taxes*</span>
                                 </div>
                                 <!-- Product Single Price End -->
@@ -386,11 +386,11 @@
                                 <div class="product-single-content-body wow fadeInUp" data-wow-delay="0.4s">
                                     <div class="qty-box">
                                         <button class="qty-btn minus"><span>-</span></button>
-                                        <input type="text" class="qty-input" value="01" readonly>
+                                        <input type="text" class="qty-input" id="product-qty" value="01" readonly>
                                         <button class="qty-btn plus"><span>+</span></button>
                                     </div>
                                     <div class="product-single-content-btn">
-                                        <a href="cart.html" class="btn-default">Add To cart</a>
+                                        <a href="#" id="add-to-cart-btn" class="btn-default">Add To cart</a>
                                     </div>
                                     <div class="product-single-action">
                                         <ul>
@@ -406,8 +406,8 @@
                                     <!-- Product Single Details List Start -->
                                     <div class="product-single-details-list">
                                         <ul>
-                                            <li><span>SKU:</span> Crop Top</li>
-                                            <li><span>Categories:</span> Women's Fashion</li>
+                                            <li><span>SKU:</span> <span id="product-sku">Crop Top</span></li>
+                                            <li><span>Categories:</span> <span id="product-categories-detail">Women's Fashion</span></li>
                                         </ul>
                                     </div>
                                     <!-- Product Single Details List End -->
@@ -1095,5 +1095,71 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
+    <script src="js/ellora-cart.js"></script>
+
+    <!-- Live product data from the Ellora admin panel (server/routes/public.js) -->
+    <!-- First-pass scope: title, description, price, SKU/category text, add-to-cart. Images,
+         size/color swatches (still cosmetic, not tied to a specific variant), reviews, and
+         related products are still static demo content — not wired yet. -->
+    <script>
+        (function () {
+            var API_BASE = 'http://localhost:4000/api/public';
+            var slug = new URLSearchParams(window.location.search).get('slug');
+            var currentProduct = null;
+
+            document.getElementById('add-to-cart-btn').addEventListener('click', function (e) {
+                e.preventDefault();
+                if (!currentProduct) return;
+
+                var variant = currentProduct.product_variants && currentProduct.product_variants[0];
+                if (!variant) {
+                    alert('This product has no purchasable variant yet.');
+                    return;
+                }
+
+                var qty = parseInt(document.getElementById('product-qty').value, 10) || 1;
+
+                EllroaCart.add({
+                    variantId: variant.id,
+                    productSlug: currentProduct.slug,
+                    productName: currentProduct.name,
+                    variantLabel: [variant.size, variant.color].filter(Boolean).join(' / ') || null,
+                    price: variant.price,
+                    quantity: qty,
+                });
+
+                window.location.href = 'cart.html';
+            });
+
+            if (!slug) return;
+
+            fetch(API_BASE + '/products/' + encodeURIComponent(slug))
+                .then(function (res) {
+                    if (!res.ok) throw new Error('Product not found');
+                    return res.json();
+                })
+                .then(function (data) {
+                    var product = data.product;
+                    currentProduct = product;
+                    var price = Number(product.base_price).toFixed(2);
+                    var compareAt = product.compare_at_price
+                        ? '<sub>$' + Number(product.compare_at_price).toFixed(2) + '</sub>'
+                        : '';
+
+                    document.title = product.name + ' - Ellora';
+                    document.getElementById('product-breadcrumb').textContent = product.name;
+                    document.getElementById('product-title').textContent = product.name;
+                    document.getElementById('product-category').textContent = product.category ? product.category.name : '';
+                    document.getElementById('product-description').textContent = product.description || '';
+                    document.getElementById('product-price').innerHTML = '$' + price + ' ' + compareAt;
+                    document.getElementById('product-sku').textContent = product.slug;
+                    document.getElementById('product-categories-detail').textContent = product.category ? product.category.name : 'Uncategorized';
+                })
+                .catch(function () {
+                    document.getElementById('product-title').textContent = 'Product not found';
+                    document.getElementById('product-description').textContent = 'This product could not be found.';
+                });
+        })();
+    </script>
 </body>
 </html>

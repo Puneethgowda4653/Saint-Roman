@@ -329,7 +329,7 @@
                     <div class="order-receive-content-box">
                         <!-- Order Receive Title Box Start -->
                         <div class="order-receive-title-box wow fadeInUp">
-                            <h2>ORDER #236</h2>
+                            <h2 id="order-number">ORDER</h2>
                             <p>Thank you. Your order has been received.</p>
                         </div>
                         <!-- Order Receive Title Box End -->
@@ -502,5 +502,13 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
+    <script>
+        (function () {
+            var orderNumber = new URLSearchParams(window.location.search).get('order');
+            if (orderNumber) {
+                document.getElementById('order-number').textContent = 'ORDER ' + orderNumber;
+            }
+        })();
+    </script>
 </body>
 </html>

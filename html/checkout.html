@@ -280,63 +280,14 @@
     <!-- Page Checkout Start -->
     <div class="page-checkout">
         <div class="container">
-            <form action="#">
+            <form action="#" id="checkout-form">
                 <div class="row">
                     <div class="col-xl-7">
                         <!-- Checkout Form Box Start -->
                         <div class="checkout-form-box">
-                            <!-- Checkout Login Box Start -->
-                            <div class="checkout-login-box wow fadeInUp" id="login_accordion">
-                                <!-- Checkout Login Accordion Start -->
-                                <div class="checkout-login-accordion">
-                                    <h2 class="checkout-accordion-header" id="login_heading1">
-                                        <button class="checkout-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#login_collapse1" aria-expanded="false" aria-controls="login_collapse1">
-                                            Returning customer? <b>Click here to login</b>
-                                        </button>
-                                    </h2>
-                                    <div id="login_collapse1" class="accordion-collapse collapse" role="region" aria-labelledby="login_heading1" data-bs-parent="#login_accordion">
-                                        <!-- Checkout Accordion Body Start -->
-                                        <div class="checkout-accordion-body">
-                                            <!-- Checkout Accordion Body Content Start -->
-                                            <div class="checkout-accordion-body-content">
-                                                <p>If you have shopped with us before, please enter your details below. If you are a new customer, please proceed to the Billing section.</p>
-                                            </div>
-                                            <!-- Checkout Accordion Body Content End -->
-
-                                            <!-- Checkout Login Form Start -->
-                                            <div class="checkout-login-form">
-                                                <div class="form-group">
-                                                    <label>Account username *</label>
-                                                    <input type="text" name="name" class="form-control" id="name" placeholder="Enter user name" required>
-                                                    <div class="help-block with-errors"></div>
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label>Create account password *</label>
-                                                    <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
-                                                    <div class="help-block with-errors"></div>
-                                                </div>
-
-                                                <!-- Checkout Login Form Footer Start -->
-                                                <div class="checkout-login-form-footer">
-                                                    <div class="checkout-login-btn">
-                                                        <button type="submit" class="btn-default">Login</button>
-                                                    </div>
-                                                    <div class="checkout-form-checkbox">
-                                                        <input type="checkbox" id="remember" name="rememberme" value="remember">
-                                                        <label for="remember">Remember Me</label>
-                                                    </div>
-                                                </div>
-                                                <!-- Checkout Login Form Footer End -->
-                                            </div>
-                                            <!-- Checkout Login Form End -->
-                                        </div>
-                                        <!-- Checkout Accordion Body End -->
-                                    </div>
-                                </div>
-                                <!-- Checkout Login Accordion End -->
-                            </div>
-                            <!-- Checkout Login Box End -->
+                            <!-- No customer accounts yet (public.js is unauthenticated, no login system) —
+                                 the "returning customer" login box from the original template is removed
+                                 rather than left as dead, non-functional UI. -->
 
                             <!-- Checkout Bill Address Box Start -->
                             <div class="checkout-bill-address-box wow fadeInUp" data-wow-delay="0.2s">
@@ -363,7 +314,7 @@
 
                                         <div class="form-group col-lg-12">
                                             <label>Company name (optional)</label>
-                                            <input type="text" name="company" class="form-control" id="company" placeholder="Enter company Name" required>
+                                            <input type="text" name="company" class="form-control" id="company" placeholder="Enter company Name">
                                             <div class="help-block with-errors"></div>
                                         </div>
 
@@ -404,7 +355,7 @@
 
                                         <div class="form-group col-lg-12">
                                             <label>Postcode / ZIP (optional)</label>
-                                            <input type="text" name="pincode" class="form-control" id="pincode" placeholder="Enter pin code" required>
+                                            <input type="text" name="pincode" class="form-control" id="pincode" placeholder="Enter pin code">
                                             <div class="help-block with-errors"></div>
                                         </div>
 
@@ -445,31 +396,10 @@
                             <div class="checkout-sidebar-box wow fadeInUp" data-wow-delay="0.2s">
                                 <!-- Product Total Order Box Start -->
                                 <div class="product-total-order-box">
-                                    <!-- Checkout Coupeon Accordion Start -->
-                                    <div class="checkout-coupeon-accordion">
-                                        <h2 class="coupeon-accordion-header" id="coupeon_heading1">
-                                            <button class="coupeon-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#coupeon_collapse1" aria-expanded="false" aria-controls="coupeon_collapse1">
-                                                Have a coupon? <b>Click here to enter your code</b>
-                                            </button>
-                                        </h2>
-                                        <div id="coupeon_collapse1" class="accordion-collapse collapse" role="region" aria-labelledby="coupeon_heading1">
-                                            <div class="coupeon-accordion-body">
-                                                <div class="coupeon-accordion-body-content">
-                                                    <p>If you have a coupon code, please apply it below.</p>
-                                                </div>
-                                                <div class="coupeon-apply-form">
-                                                    <div class="form-group">
-                                                        <input type="text" name="promo" class="form-control" placeholder="Add promo code" required>
-                                                    </div>
-                                                    <div class="coupeon-apply-btn">
-                                                        <button type="submit" class="btn-default">Apply Coupon</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Checkout Coupeon Accordion End -->
-                                    
+                                    <!-- No coupon system built yet (Module 10, Coupon Engine, is deliberately
+                                         deferred — see project notes), so the fake "Have a coupon?" box from
+                                         the original template is removed rather than left non-functional. -->
+
                                     <!-- Product Total Order Title Start -->
                                     <div class="product-total-order-title">
                                         <h3>Your Order</h3>
@@ -484,126 +414,34 @@
                                             <span class="product-total-item-tag">Subtotal</span>
                                         </div>
                                         <!-- Product Total Item Tag List End -->
-            
-                                        <!-- Product Total Item Start -->
-                                        <div class="product-total-item">
-                                            <div class="product-total-item-header">
-                                                <div class="product-total-item-image">
-                                                    <figure>
-                                                        <img src="images/product-image-1.png" alt="">
-                                                    </figure>
-                                                </div>
-                                                <div class="product-total-item-title">
-                                                    <p>Chic Aura Crop Top</p>
-                                                </div>
-                                            </div>
-                                            <div class="product-total-item-subtotal">
-                                                <p>$35.00</p>
-                                            </div>
-                                        </div>
-                                        <!-- Product Total Item End -->
-            
-                                        <!-- Product Total Item Start -->
-                                        <div class="product-total-item">
-                                            <div class="product-total-item-header">
-                                                <div class="product-total-item-image">
-                                                    <figure>
-                                                        <img src="images/product-image-2.png" alt="">
-                                                    </figure>
-                                                </div>
-                                                <div class="product-total-item-title">
-                                                    <p>Velvet Charm Gown</p>
-                                                </div>
-                                            </div>
-                                            <div class="product-total-item-subtotal">
-                                                <p>$35.00</p>
-                                            </div>
-                                        </div>
-                                        <!-- Product Total Item End -->
 
-                                        <!-- Product Total Item Start -->
-                                        <div class="product-total-item">
-                                            <div class="product-total-item-header">
-                                                <div class="product-total-item-image">
-                                                    <figure>
-                                                        <img src="images/product-image-3.png" alt="">
-                                                    </figure>
-                                                </div>
-                                                <div class="product-total-item-title">
-                                                    <p>Elegant Flow Kurti</p>
-                                                </div>
-                                            </div>
-                                            <div class="product-total-item-subtotal">
-                                                <p>$35.00</p>
-                                            </div>
-                                        </div>
-                                        <!-- Product Total Item End -->
+                                        <!-- Live order items — see js/ellora-cart.js -->
+                                        <div id="live-order-items"></div>
 
                                         <!-- All Product Total List Start -->
                                         <div class="all-product-total-list">
-                                            <!-- All Product Total Start -->
                                             <div class="all-product-total">
-                                                <p>Subtotal <span>$105.00</span></p>
+                                                <p>Subtotal <span id="checkout-subtotal">$0.00</span></p>
                                             </div>
-                                            <!-- All Product Total Start -->
-        
-                                            <!-- All Product Total End -->
                                             <div class="all-product-total">
-                                                <p>Total <span>$105.00</span></p>
+                                                <p>Total <span id="checkout-total">$0.00</span></p>
                                             </div>
-                                            <!-- All Product Total End -->
                                         </div>
                                         <!-- All Product Total List End -->
 
-                                        <!-- Order Summary Shipment Info Start -->
                                         <div class="order-summary-shipment-info">
-                                            <h3>Shipment 1:</h3>
-                                            <ul>
-                                                <li>
-                                                    <span>
-                                                        <input type="radio" id="Local_pickup" name="interest" value="Local_pickup">
-                                                        <label for="Local_pickup">Local pickup:</label>
-                                                    </span>
-                                                    <label for="Local_pickup">$150.00</label>
-                                                </li>
-                                                <li>
-                                                    <span>
-                                                        <input type="radio" id="Free_shipping" name="interest" value="Free_shipping" checked>
-                                                        <label for="Free_shipping">Free shipping</label>
-                                                    </span>
-                                                    <label for="Local_pickup"></label>
-                                                </li>
-                                                <li>
-                                                    <span>
-                                                        <input type="radio" id="Flat_rate" name="interest" value="Flat_rate">
-                                                        <label for="Flat_rate">Flat rate:</label>
-                                                    </span>
-                                                    <label for="Flat_rate">$200.00</label>
-                                                </li>
-                                            </ul>
+                                            <p>Free shipping.</p>
                                         </div>
-                                        <!-- Order Summary Shipment Info End -->
 
                                         <!-- Order Payment Info Start -->
                                         <div class="order-payment-info">
-                                            <!-- Order Payment Info Item Start -->
                                             <div class="order-payment-info-item">
                                                 <span>
-                                                    <input type="radio" id="check_payments" name="payment" value="check_payments" checked>
-                                                    <label for="check_payments">Check payments</label>
-                                                </span>
-                                                <p>Please send a check to Store Name, Store Street, Store Town, Store State / County, Store Postcode.</p>
-                                            </div>
-                                            <!-- Order Payment Info Item End -->
-
-                                            <!-- Order Payment Info Item Start -->
-                                            <div class="order-payment-info-item">
-                                                <span>
-                                                    <input type="radio" id="cash_on_delivery" name="payment" value="cash_on_delivery">
+                                                    <input type="radio" id="cash_on_delivery" name="payment" value="cash_on_delivery" checked disabled>
                                                     <label for="cash_on_delivery">Cash on delivery</label>
                                                 </span>
+                                                <p>Only payment method available right now — pay the courier when your order arrives.</p>
                                             </div>
-                                            <!-- Order Payment Info Item End -->
                                         </div>
                                         <!-- Order Payment Info End -->
                                     </div>
@@ -613,7 +451,7 @@
 
                                 <!-- Place Order Button Start -->
                                 <div class="place-order-button">
-                                    <a href="#" class="btn-default">Place Order</a>
+                                    <a href="#" id="place-order-btn" class="btn-default">Place Order</a>
                                     <div id="msgSubmit" class="h3 hidden"></div>
                                 </div>
                                 <!-- Place Order Button End -->
@@ -772,5 +610,101 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
+    <script src="js/ellora-cart.js"></script>
+
+    <!-- Live checkout — renders the cart, submits the real order to server/routes/public.js POST /orders -->
+    <script>
+        (function () {
+            var API_BASE = 'http://localhost:4000/api/public';
+            var itemsContainer = document.getElementById('live-order-items');
+            var subtotalEl = document.getElementById('checkout-subtotal');
+            var totalEl = document.getElementById('checkout-total');
+            var placeOrderBtn = document.getElementById('place-order-btn');
+            var msgEl = document.getElementById('msgSubmit');
+
+            function renderSummary() {
+                var items = EllroaCart.get();
+                itemsContainer.innerHTML = items.map(function (item) {
+                    var subtotal = (item.price * item.quantity).toFixed(2);
+                    return (
+                        '<div class="product-total-item">' +
+                        '  <div class="product-total-item-header">' +
+                        '    <div class="product-total-item-image"><figure><img src="images/product-image-1.png" alt=""></figure></div>' +
+                        '    <div class="product-total-item-title"><p>' + item.productName + (item.variantLabel ? ' (' + item.variantLabel + ')' : '') + ' &times; ' + item.quantity + '</p></div>' +
+                        '  </div>' +
+                        '  <div class="product-total-item-subtotal"><p>$' + subtotal + '</p></div>' +
+                        '</div>'
+                    );
+                }).join('');
+
+                var subtotal = EllroaCart.subtotal();
+                subtotalEl.textContent = '$' + subtotal.toFixed(2);
+                totalEl.textContent = '$' + subtotal.toFixed(2);
+            }
+
+            function showMessage(text, isError) {
+                msgEl.textContent = text;
+                msgEl.classList.remove('hidden');
+                msgEl.style.color = isError ? '#c0392b' : '';
+            }
+
+            placeOrderBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                var items = EllroaCart.get();
+                if (items.length === 0) {
+                    showMessage('Your cart is empty.', true);
+                    return;
+                }
+
+                var form = document.getElementById('checkout-form');
+                if (!form.reportValidity()) return;
+
+                var fname = document.getElementById('fname').value;
+                var lname = document.getElementById('lname').value;
+                var address = document.getElementById('address').value;
+                var city = document.getElementById('city').value;
+                var district = document.getElementById('district').value;
+                var pincode = document.getElementById('pincode').value;
+                var country = document.getElementById('country').value;
+                var phone = document.getElementById('phone').value;
+                var email = document.getElementById('email').value;
+                var notes = document.getElementById('notes').value;
+
+                placeOrderBtn.textContent = 'Placing order…';
+
+                fetch(API_BASE + '/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer_name: fname + ' ' + lname,
+                        customer_email: email,
+                        customer_phone: phone,
+                        shipping_address: { address: address, city: city, district: district, pincode: pincode, country: country },
+                        notes: notes,
+                        items: items.map(function (item) {
+                            return { variant_id: item.variantId, quantity: item.quantity };
+                        }),
+                    }),
+                })
+                    .then(function (res) {
+                        return res.json().then(function (data) {
+                            if (!res.ok) throw new Error(data.error || 'Could not place order');
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        EllroaCart.clear();
+                        window.location.href = 'order-received.html?order=' + encodeURIComponent(data.order.order_number);
+                    })
+                    .catch(function (err) {
+                        placeOrderBtn.textContent = 'Place Order';
+                        showMessage(err.message, true);
+                    });
+            });
+
+            renderSummary();
+        })();
+    </script>
 </body>
 </html>

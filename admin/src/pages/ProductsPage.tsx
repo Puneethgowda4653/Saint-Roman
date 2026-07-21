@@ -76,6 +76,7 @@ export function ProductsPage() {
   const [hsnCode, setHsnCode] = useState('')
   const [gstPercent, setGstPercent] = useState('')
   const [basePrice, setBasePrice] = useState('')
+  const [status, setStatus] = useState<Product['status']>('draft')
   const [categoryId, setCategoryId] = useState<string>('')
   const [variants, setVariants] = useState<Variant[]>([{ ...emptyVariant }])
   const [saving, setSaving] = useState(false)
@@ -90,6 +91,7 @@ export function ProductsPage() {
     setHsnCode('')
     setGstPercent('')
     setBasePrice('')
+    setStatus('draft')
     setCategoryId('')
     setVariants([{ ...emptyVariant }])
   }
@@ -113,6 +115,7 @@ export function ProductsPage() {
     setHsnCode(product.hsn_code ?? '')
     setGstPercent(product.gst_percent != null ? String(product.gst_percent) : '')
     setBasePrice(String(product.base_price))
+    setStatus(product.status)
     setCategoryId(product.category?.id ?? '')
     setVariants(
       product.product_variants.length > 0
@@ -141,6 +144,7 @@ export function ProductsPage() {
         hsn_code: hsnCode || null,
         gst_percent: gstPercent === '' ? 0 : Number(gstPercent),
         base_price: Number(basePrice) || 0,
+        status,
         category_id: categoryId || null,
         variants: variants.filter((v) => v.size || v.color),
       }
@@ -149,7 +153,7 @@ export function ProductsPage() {
         await apiFetch(`/products/${editingId}`, { method: 'PUT', body: JSON.stringify(body) })
         toast.success('Product updated')
       } else {
-        await apiFetch('/products', { method: 'POST', body: JSON.stringify({ ...body, status: 'draft' }) })
+        await apiFetch('/products', { method: 'POST', body: JSON.stringify(body) })
         toast.success('Product created')
       }
       setOpen(false)
@@ -234,20 +238,35 @@ export function ProductsPage() {
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <Label>Category</Label>
-                <Select value={categoryId} onValueChange={(value) => setCategoryId(value ?? '')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categoriesData?.categories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label>Category</Label>
+                  <Select value={categoryId} onValueChange={(value) => setCategoryId(value ?? '')}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categoriesData?.categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label>Status</Label>
+                  <Select value={status} onValueChange={(value) => setStatus((value as Product['status']) ?? 'draft')}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="p-description">Description</Label>
