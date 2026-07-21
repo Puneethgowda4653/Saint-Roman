@@ -1,0 +1,20 @@
+{
+  "name": "ellora-fashion-lifestyle-store",
+  "version": "1.0.0",
+  "description": "Ellora - Fashion & Lifestyle Store HTML Template",
+  "main": "html/index.html",
+  "scripts": {
+    "dev": "browser-sync start --server html --files \"html/**/*\"",
+    "start": "npm run dev",
+    "dev:server": "npm run dev --prefix server",
+    "dev:admin": "npm run dev --prefix admin",
+    "dev:full": "concurrently -n storefront,server,admin -c blue,green,magenta \"npm run dev\" \"npm run dev:server\" \"npm run dev:admin\"",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix admin"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.3",
+    "concurrently": "^9.1.0",
+    "docx": "^9.7.1",
+    "mammoth": "^1.12.0"
+  }
+}
