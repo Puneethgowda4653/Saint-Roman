@@ -396,9 +396,14 @@
                             <div class="checkout-sidebar-box wow fadeInUp" data-wow-delay="0.2s">
                                 <!-- Product Total Order Box Start -->
                                 <div class="product-total-order-box">
-                                    <!-- No coupon system built yet (Module 10, Coupon Engine, is deliberately
-                                         deferred — see project notes), so the fake "Have a coupon?" box from
-                                         the original template is removed rather than left non-functional. -->
+                                    <!-- Real coupon box — validated live against server/lib/coupons.js -->
+                                    <div class="checkout-coupeon-accordion">
+                                        <div class="coupeon-apply-form" style="display:flex; gap:8px; margin-bottom:16px;">
+                                            <input type="text" id="coupon-code-input" class="form-control" placeholder="Coupon code">
+                                            <button type="button" id="apply-coupon-btn" class="btn-default">Apply</button>
+                                        </div>
+                                        <p id="coupon-message" style="display:none; margin-bottom:16px;"></p>
+                                    </div>
 
                                     <!-- Product Total Order Title Start -->
                                     <div class="product-total-order-title">
@@ -422,6 +427,9 @@
                                         <div class="all-product-total-list">
                                             <div class="all-product-total">
                                                 <p>Subtotal <span id="checkout-subtotal">$0.00</span></p>
+                                            </div>
+                                            <div class="all-product-total" id="checkout-discount-row" style="display:none;">
+                                                <p>Discount <span id="checkout-discount">-$0.00</span></p>
                                             </div>
                                             <div class="all-product-total">
                                                 <p>Total <span id="checkout-total">$0.00</span></p>
@@ -618,9 +626,15 @@
             var API_BASE = 'http://localhost:4000/api/public';
             var itemsContainer = document.getElementById('live-order-items');
             var subtotalEl = document.getElementById('checkout-subtotal');
+            var discountRow = document.getElementById('checkout-discount-row');
+            var discountEl = document.getElementById('checkout-discount');
             var totalEl = document.getElementById('checkout-total');
             var placeOrderBtn = document.getElementById('place-order-btn');
             var msgEl = document.getElementById('msgSubmit');
+            var couponInput = document.getElementById('coupon-code-input');
+            var couponMsgEl = document.getElementById('coupon-message');
+
+            var appliedCoupon = null; // { code, discount }
 
             function renderSummary() {
                 var items = EllroaCart.get();
@@ -638,8 +652,15 @@
                 }).join('');
 
                 var subtotal = EllroaCart.subtotal();
+                var discount = appliedCoupon ? appliedCoupon.discount : 0;
                 subtotalEl.textContent = '$' + subtotal.toFixed(2);
-                totalEl.textContent = '$' + subtotal.toFixed(2);
+                if (discount > 0) {
+                    discountRow.style.display = '';
+                    discountEl.textContent = '-$' + discount.toFixed(2);
+                } else {
+                    discountRow.style.display = 'none';
+                }
+                totalEl.textContent = '$' + Math.max(0, subtotal - discount).toFixed(2);
             }
 
             function showMessage(text, isError) {
@@ -647,6 +668,36 @@
                 msgEl.classList.remove('hidden');
                 msgEl.style.color = isError ? '#c0392b' : '';
             }
+
+            document.getElementById('apply-coupon-btn').addEventListener('click', function () {
+                var code = couponInput.value.trim();
+                if (!code) return;
+
+                fetch(API_BASE + '/coupons/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, subtotal: EllroaCart.subtotal() }),
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        couponMsgEl.style.display = '';
+                        if (data.valid) {
+                            appliedCoupon = { code: data.coupon.code, discount: data.discount };
+                            couponMsgEl.textContent = 'Coupon "' + data.coupon.code + '" applied.';
+                            couponMsgEl.style.color = '';
+                        } else {
+                            appliedCoupon = null;
+                            couponMsgEl.textContent = data.message || 'Invalid coupon';
+                            couponMsgEl.style.color = '#c0392b';
+                        }
+                        renderSummary();
+                    })
+                    .catch(function () {
+                        couponMsgEl.style.display = '';
+                        couponMsgEl.textContent = 'Could not validate coupon right now.';
+                        couponMsgEl.style.color = '#c0392b';
+                    });
+            });
 
             placeOrderBtn.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -682,6 +733,7 @@
                         customer_phone: phone,
                         shipping_address: { address: address, city: city, district: district, pincode: pincode, country: country },
                         notes: notes,
+                        coupon_code: appliedCoupon ? appliedCoupon.code : null,
                         items: items.map(function (item) {
                             return { variant_id: item.variantId, quantity: item.quantity };
                         }),

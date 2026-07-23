@@ -13,6 +13,13 @@ const allFiles = [
   '../supabase/phase3_cms.sql',
   '../supabase/phase4_customers.sql',
   '../supabase/phase4_returns.sql',
+  '../supabase/phase5_coupons.sql',
+  '../supabase/phase5_reports.sql',
+  '../supabase/phase5_support.sql',
+  '../supabase/phase5_audit_logs.sql',
+  '../supabase/phase5_cms_content.sql',
+  '../supabase/phase5_maintenance_mode.sql',
+  '../supabase/phase5_influencers.sql',
 ];
 
 // Pass specific file names as CLI args to re-run just those (earlier files use `create policy`/`create trigger`

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
+import { apiFetch } from '@/lib/api'
 
 interface AuthContextValue {
   session: Session | null
@@ -31,6 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (!error) {
+      apiFetch('/auth/log-login', { method: 'POST' }).catch(() => {})
+    }
     return { error: error?.message ?? null }
   }
 

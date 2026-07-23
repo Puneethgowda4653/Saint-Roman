@@ -13,6 +13,14 @@ import { OrdersPage } from '@/pages/OrdersPage'
 import { BlogPostsPage } from '@/pages/BlogPostsPage'
 import { FaqsPage } from '@/pages/FaqsPage'
 import { CustomersPage } from '@/pages/CustomersPage'
+import { CouponsPage } from '@/pages/CouponsPage'
+import { ReportsPage } from '@/pages/ReportsPage'
+import { WarehousePage } from '@/pages/WarehousePage'
+import { SupportPage } from '@/pages/SupportPage'
+import { AuditLogsPage } from '@/pages/AuditLogsPage'
+import { BannersPage } from '@/pages/BannersPage'
+import { TeamPage } from '@/pages/TeamPage'
+import { InfluencersPage } from '@/pages/InfluencersPage'
 import { ReturnsPage } from '@/pages/ReturnsPage'
 import { FinancePage } from '@/pages/FinancePage'
 
@@ -32,6 +40,14 @@ function App() {
               <Route path="/blog-posts" element={<BlogPostsPage />} />
               <Route path="/faqs" element={<FaqsPage />} />
               <Route path="/customers" element={<CustomersPage />} />
+              <Route path="/coupons" element={<CouponsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/warehouse" element={<WarehousePage />} />
+              <Route path="/support" element={<SupportPage />} />
+              <Route path="/audit-logs" element={<AuditLogsPage />} />
+              <Route path="/banners" element={<BannersPage />} />
+              <Route path="/team" element={<TeamPage />} />
+              <Route path="/influencers" element={<InfluencersPage />} />
               <Route path="/returns" element={<ReturnsPage />} />
               <Route path="/finance" element={<FinancePage />} />
               <Route path="/settings" element={<SettingsPage />} />

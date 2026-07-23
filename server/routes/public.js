@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
+import { validateCoupon } from '../lib/coupons.js';
 
 const router = Router();
 
@@ -52,6 +53,51 @@ router.get('/faqs', async (req, res) => {
   res.json({ faqs: data });
 });
 
+router.get('/site-content', async (req, res) => {
+  const [{ data: settings }, { data: banners }] = await Promise.all([
+    supabaseAdmin.from('settings').select('site_title, announcement_text, footer_copyright_text, maintenance_mode').single(),
+    supabaseAdmin.from('banners').select('id, title, subtitle, link_url').eq('is_active', true).order('sort_order', { ascending: true }),
+  ]);
+
+  res.json({ settings: settings || {}, banners: banners || [] });
+});
+
+router.post('/support-tickets', async (req, res) => {
+  const { name, email, phone, subject, message } = req.body;
+
+  if (!name || !message) {
+    return res.status(400).json({ error: 'Name and message are required' });
+  }
+
+  let customerId = null;
+  if (email) {
+    const { data: existingCustomer } = await supabaseAdmin.from('customers').select('id').eq('email', email).maybeSingle();
+    customerId = existingCustomer ? existingCustomer.id : null;
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('support_tickets')
+    .insert({
+      customer_id: customerId,
+      customer_name: name,
+      customer_email: email || null,
+      customer_phone: phone || null,
+      subject: subject || 'Contact form submission',
+      message,
+    })
+    .select()
+    .single();
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.status(201).json({ ticket: { id: data.id } });
+});
+
+router.post('/coupons/validate', async (req, res) => {
+  const { code, subtotal } = req.body;
+  const result = await validateCoupon(code, Number(subtotal) || 0);
+  res.json(result);
+});
+
 function generateOrderNumber() {
   const stamp = Date.now().toString(36).toUpperCase();
   const rand = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -62,7 +108,7 @@ function generateOrderNumber() {
 // looks up each variant server-side by id and prices the order from that. Cash-on-delivery
 // only (no payment gateway configured), so there's no payment step here beyond recording the order.
 router.post('/orders', async (req, res) => {
-  const { customer_name, customer_email, customer_phone, shipping_address, notes, items } = req.body;
+  const { customer_name, customer_email, customer_phone, shipping_address, notes, items, coupon_code } = req.body;
 
   if (!customer_name || !customer_phone || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Name, phone, and at least one cart item are required' });
@@ -100,6 +146,20 @@ router.post('/orders', async (req, res) => {
 
   const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0);
 
+  // Re-validate the coupon server-side — never trust a discount amount computed on the client.
+  let discountAmount = 0;
+  let appliedCouponCode = null;
+  let appliedCouponUsageCount = 0;
+  if (coupon_code) {
+    const couponResult = await validateCoupon(coupon_code, subtotal);
+    if (!couponResult.valid) {
+      return res.status(400).json({ error: couponResult.message || 'Invalid coupon' });
+    }
+    discountAmount = couponResult.discount;
+    appliedCouponCode = couponResult.coupon.code;
+    appliedCouponUsageCount = couponResult.coupon.usage_count;
+  }
+
   // Match or create a customer record by email, so repeat shoppers accumulate real order history.
   let customerId = null;
   if (customer_email) {
@@ -132,7 +192,9 @@ router.post('/orders', async (req, res) => {
       shipping_address: shipping_address || null,
       subtotal,
       shipping_fee: 0,
-      total: subtotal,
+      discount_amount: discountAmount,
+      coupon_code: appliedCouponCode,
+      total: Math.max(0, subtotal - discountAmount),
       notes: notes || null,
     })
     .select()
@@ -152,7 +214,14 @@ router.post('/orders', async (req, res) => {
       .eq('id', item.variant_id);
   }
 
-  res.status(201).json({ order: { id: order.id, order_number: order.order_number, total: order.total } });
+  if (appliedCouponCode) {
+    await supabaseAdmin
+      .from('coupons')
+      .update({ usage_count: appliedCouponUsageCount + 1 })
+      .eq('code', appliedCouponCode);
+  }
+
+  res.status(201).json({ order: { id: order.id, order_number: order.order_number, total: order.total, discount_amount: discountAmount } });
 });
 
 export default router;

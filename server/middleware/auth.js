@@ -1,4 +1,4 @@
-import { supabaseAnon } from '../config/supabase.js';
+import { supabaseAnon, supabaseAdmin } from '../config/supabase.js';
 
 // Verifies the Supabase access token sent from the admin frontend and attaches the user + role to req.
 export async function requireAuth(req, res, next) {
@@ -15,16 +15,19 @@ export async function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Invalid or expired session' });
   }
 
-  req.user = data.user;
+  // The real role lives in `profiles.role` (set by the on_auth_user_created trigger, editable by
+  // admins via TeamPage.tsx) — NOT `user_metadata.role`, which is never written anywhere. Reading
+  // from user_metadata here used to make requireRole() silently always pass as 'admin'.
+  const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', data.user.id).single();
+
+  req.user = { ...data.user, role: profile ? profile.role : 'admin' };
   next();
 }
 
-// First release only enforces single-admin access; multi-role checks slot in here later.
 export function requireRole(...allowedRoles) {
   return (req, res, next) => {
-    const role = req.user?.user_metadata?.role ?? 'admin';
-    if (!allowedRoles.includes(role)) {
-      return res.status(403).json({ error: 'Insufficient permissions' });
+    if (!allowedRoles.includes(req.user?.role)) {
+      return res.status(403).json({ error: 'Insufficient permissions for this action' });
     }
     next();
   };

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
+import { logAudit } from '../lib/audit.js';
 
 const router = Router();
 
@@ -112,6 +113,8 @@ router.put('/:id', requireAuth, async (req, res) => {
   if (courier !== undefined) patch.courier = courier;
   if (notes !== undefined) patch.notes = notes;
 
+  const { data: before } = await supabaseAdmin.from('orders').select('status, order_number').eq('id', req.params.id).single();
+
   const { data, error } = await supabaseAdmin
     .from('orders')
     .update(patch)
@@ -120,6 +123,17 @@ router.put('/:id', requireAuth, async (req, res) => {
     .single();
 
   if (error) return res.status(400).json({ error: error.message });
+
+  if (status !== undefined && before && before.status !== status) {
+    logAudit({
+      actorEmail: req.user.email,
+      action: 'status_change',
+      entityType: 'order',
+      entityId: req.params.id,
+      details: { order_number: before.order_number, old_status: before.status, new_status: status },
+    });
+  }
+
   res.json({ order: data });
 });
 

@@ -49,7 +49,7 @@
                 <div class="col-lg-12">
                     <!-- Topbar Content Information Start -->
                     <div class="topbar-content-info">
-                        <p><i class="fa-regular fa-clock"></i> Get a Flat 10% Off on All Watches - Limited Time Only</p>
+                        <p id="live-announcement"><i class="fa-regular fa-clock"></i> Get a Flat 10% Off on All Watches - Limited Time Only</p>
                     </div>
                     <!-- Topbar Content Information End -->
                 </div>
@@ -500,6 +500,28 @@
                                     .catch(function (err) {
                                         container.innerHTML = '<p>Could not load products (' + err.message + ').</p>';
                                     });
+
+                                // Live announcement bar / footer copyright — same admin-managed site content
+                                // used across pages, see server/routes/public.js GET /site-content.
+                                fetch(API_BASE + '/site-content')
+                                    .then(function (res) { return res.json(); })
+                                    .then(function (data) {
+                                        var settings = data.settings || {};
+                                        if (settings.announcement_text) {
+                                            document.getElementById('live-announcement').innerHTML =
+                                                '<i class="fa-regular fa-clock"></i> ' + settings.announcement_text;
+                                        }
+                                        if (settings.footer_copyright_text) {
+                                            document.getElementById('live-footer-copyright').textContent = settings.footer_copyright_text;
+                                        }
+                                        if (settings.maintenance_mode) {
+                                            document.body.innerHTML =
+                                                '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem;font-family:sans-serif;">' +
+                                                '  <div><h1>We will be back soon</h1><p>The store is temporarily down for maintenance. Please check back shortly.</p></div>' +
+                                                '</div>';
+                                        }
+                                    })
+                                    .catch(function () { /* fall back to static template text */ });
                             })();
                         </script>
 
@@ -605,7 +627,7 @@
                     <div class="footer-copyright">
                         <!-- Footer Copyright Text Start -->
                         <div class="footer-copyright-text">
-                            <p>Copyright © 2026 All Rights Reserved.</p>
+                            <p id="live-footer-copyright">Copyright © 2026 All Rights Reserved.</p>
                         </div>
                         <!-- Footer Copyright Text End -->
                         

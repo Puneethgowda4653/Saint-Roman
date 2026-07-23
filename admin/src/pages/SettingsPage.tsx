@@ -11,6 +11,9 @@ interface Settings {
   site_title?: string
   currency?: string
   tax_percent?: number
+  announcement_text?: string
+  footer_copyright_text?: string
+  maintenance_mode?: boolean
 }
 
 export function SettingsPage() {
@@ -72,6 +75,35 @@ export function SettingsPage() {
                 value={settings.tax_percent ?? ''}
                 onChange={(e) => setForm({ ...settings, tax_percent: Number(e.target.value) })}
               />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="announcement_text">Announcement bar text</Label>
+              <Input
+                id="announcement_text"
+                value={settings.announcement_text ?? ''}
+                onChange={(e) => setForm({ ...settings, announcement_text: e.target.value })}
+                placeholder="Get a Flat 10% Off — Limited Time Only"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="footer_copyright_text">Footer copyright text</Label>
+              <Input
+                id="footer_copyright_text"
+                value={settings.footer_copyright_text ?? ''}
+                onChange={(e) => setForm({ ...settings, footer_copyright_text: e.target.value })}
+                placeholder="Copyright © 2026 All Rights Reserved."
+              />
+            </div>
+            <div className="flex items-center gap-2 rounded-md border border-destructive/30 p-3">
+              <input
+                id="maintenance_mode"
+                type="checkbox"
+                checked={settings.maintenance_mode ?? false}
+                onChange={(e) => setForm({ ...settings, maintenance_mode: e.target.checked })}
+              />
+              <Label htmlFor="maintenance_mode" className="text-destructive">
+                Maintenance mode — takes the storefront offline for shoppers
+              </Label>
             </div>
             <Button type="submit" disabled={saving} className="w-fit">
               {saving ? 'Saving…' : 'Save changes'}

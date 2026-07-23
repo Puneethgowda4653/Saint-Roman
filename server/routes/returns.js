@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
+import { logAudit } from '../lib/audit.js';
 
 const router = Router();
 
@@ -100,6 +101,14 @@ router.put('/:id', requireAuth, async (req, res) => {
         created_by: req.user.id,
       });
     }
+
+    logAudit({
+      actorEmail: req.user.email,
+      action: 'refund',
+      entityType: 'return',
+      entityId: req.params.id,
+      details: { refund_amount: existing.refund_amount, order_id: existing.order_id },
+    });
   }
 
   res.json({ return: data });

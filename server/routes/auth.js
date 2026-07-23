@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabaseAnon, supabaseAdmin } from '../config/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
+import { logAudit } from '../lib/audit.js';
 
 const router = Router();
 
@@ -29,6 +30,14 @@ router.post('/logout', requireAuth, async (req, res) => {
 
 router.get('/me', requireAuth, (req, res) => {
   res.json({ user: req.user });
+});
+
+// Called by AuthContext right after a successful sign-in. The actual login happens client-side
+// via the Supabase JS SDK directly (not through this server), so this is how a login event
+// becomes visible to the admin-facing Audit Logs page.
+router.post('/log-login', requireAuth, async (req, res) => {
+  await logAudit({ actorEmail: req.user.email, action: 'login', entityType: 'auth', entityId: req.user.id });
+  res.json({ success: true });
 });
 
 export default router;

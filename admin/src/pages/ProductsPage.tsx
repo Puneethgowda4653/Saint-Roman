@@ -46,6 +46,7 @@ interface Product {
   brand: string | null
   hsn_code: string | null
   gst_percent: number | null
+  cost_price: number | null
   base_price: number
   status: 'draft' | 'active' | 'archived'
   category: Category | null
@@ -75,6 +76,7 @@ export function ProductsPage() {
   const [brand, setBrand] = useState('')
   const [hsnCode, setHsnCode] = useState('')
   const [gstPercent, setGstPercent] = useState('')
+  const [costPrice, setCostPrice] = useState('')
   const [basePrice, setBasePrice] = useState('')
   const [status, setStatus] = useState<Product['status']>('draft')
   const [categoryId, setCategoryId] = useState<string>('')
@@ -90,6 +92,7 @@ export function ProductsPage() {
     setBrand('')
     setHsnCode('')
     setGstPercent('')
+    setCostPrice('')
     setBasePrice('')
     setStatus('draft')
     setCategoryId('')
@@ -114,6 +117,7 @@ export function ProductsPage() {
     setBrand(product.brand ?? '')
     setHsnCode(product.hsn_code ?? '')
     setGstPercent(product.gst_percent != null ? String(product.gst_percent) : '')
+    setCostPrice(product.cost_price != null ? String(product.cost_price) : '')
     setBasePrice(String(product.base_price))
     setStatus(product.status)
     setCategoryId(product.category?.id ?? '')
@@ -143,6 +147,7 @@ export function ProductsPage() {
         brand: brand || null,
         hsn_code: hsnCode || null,
         gst_percent: gstPercent === '' ? 0 : Number(gstPercent),
+        cost_price: costPrice === '' ? null : Number(costPrice),
         base_price: Number(basePrice) || 0,
         status,
         category_id: categoryId || null,
@@ -210,6 +215,17 @@ export function ProductsPage() {
                     type="number"
                     value={basePrice}
                     onChange={(e) => setBasePrice(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="p-cost">Cost price (for Profit Report, not shown publicly)</Label>
+                  <Input
+                    id="p-cost"
+                    type="number"
+                    value={costPrice}
+                    onChange={(e) => setCostPrice(e.target.value)}
                   />
                 </div>
               </div>
