@@ -15,12 +15,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useApiResource } from '@/hooks/useSupabase'
 import { apiFetch } from '@/lib/api'
 import { toast } from 'sonner'
+import { ImageUpload } from '@/components/shared/ImageUpload'
 
 interface Banner {
   id: string
   title: string
   subtitle: string | null
   link_url: string | null
+  image_url: string | null
   sort_order: number
   is_active: boolean
 }
@@ -33,6 +35,7 @@ export function BannersPage() {
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [linkUrl, setLinkUrl] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
   const [sortOrder, setSortOrder] = useState('0')
   const [saving, setSaving] = useState(false)
 
@@ -41,6 +44,7 @@ export function BannersPage() {
     setTitle('')
     setSubtitle('')
     setLinkUrl('')
+    setImageUrl('')
     setSortOrder('0')
   }
 
@@ -54,6 +58,7 @@ export function BannersPage() {
     setTitle(banner.title)
     setSubtitle(banner.subtitle ?? '')
     setLinkUrl(banner.link_url ?? '')
+    setImageUrl(banner.image_url ?? '')
     setSortOrder(String(banner.sort_order))
     setOpen(true)
   }
@@ -62,7 +67,7 @@ export function BannersPage() {
     e.preventDefault()
     setSaving(true)
     try {
-      const body = { title, subtitle: subtitle || null, link_url: linkUrl || null, sort_order: Number(sortOrder) || 0 }
+      const body = { title, subtitle: subtitle || null, link_url: linkUrl || null, image_url: imageUrl || null, sort_order: Number(sortOrder) || 0 }
       if (editingId) {
         await apiFetch(`/banners/${editingId}`, { method: 'PUT', body: JSON.stringify(body) })
         toast.success('Banner updated')
@@ -124,6 +129,10 @@ export function BannersPage() {
                 <Input id="b-link" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="products.html" />
               </div>
               <div className="flex flex-col gap-2">
+                <Label>Banner image</Label>
+                <ImageUpload value={imageUrl} onChange={setImageUrl} folder="ellora/banners" />
+              </div>
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="b-sort">Sort order</Label>
                 <Input id="b-sort" type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
               </div>
@@ -144,6 +153,7 @@ export function BannersPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-16">Image</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Subtitle</TableHead>
               <TableHead>Order</TableHead>
@@ -154,6 +164,13 @@ export function BannersPage() {
           <TableBody>
             {data.banners.map((banner) => (
               <TableRow key={banner.id}>
+                <TableCell>
+                  {banner.image_url ? (
+                    <img src={banner.image_url} alt="" className="h-10 w-14 rounded object-cover" />
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{banner.title}</TableCell>
                 <TableCell className="text-muted-foreground">{banner.subtitle ?? '—'}</TableCell>
                 <TableCell className="text-muted-foreground">{banner.sort_order}</TableCell>
@@ -178,7 +195,7 @@ export function BannersPage() {
             ))}
             {data.banners.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   No banners yet.
                 </TableCell>
               </TableRow>

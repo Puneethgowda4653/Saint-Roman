@@ -21,6 +21,11 @@ import { AuditLogsPage } from '@/pages/AuditLogsPage'
 import { BannersPage } from '@/pages/BannersPage'
 import { TeamPage } from '@/pages/TeamPage'
 import { InfluencersPage } from '@/pages/InfluencersPage'
+import { MarketingPage } from '@/pages/MarketingPage'
+import { ShippingPage } from '@/pages/ShippingPage'
+import { CrmPage } from '@/pages/CrmPage'
+import { AiPage } from '@/pages/AiPage'
+import { MediaPage } from '@/pages/MediaPage'
 import { ReturnsPage } from '@/pages/ReturnsPage'
 import { FinancePage } from '@/pages/FinancePage'
 
@@ -48,6 +53,11 @@ function App() {
               <Route path="/banners" element={<BannersPage />} />
               <Route path="/team" element={<TeamPage />} />
               <Route path="/influencers" element={<InfluencersPage />} />
+              <Route path="/marketing" element={<MarketingPage />} />
+              <Route path="/shipping" element={<ShippingPage />} />
+              <Route path="/crm" element={<CrmPage />} />
+              <Route path="/ai" element={<AiPage />} />
+              <Route path="/media" element={<MediaPage />} />
               <Route path="/returns" element={<ReturnsPage />} />
               <Route path="/finance" element={<FinancePage />} />
               <Route path="/settings" element={<SettingsPage />} />

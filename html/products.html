@@ -30,6 +30,17 @@
 	<link rel="stylesheet" href="css/mousecursor.css">
 	<!-- Main Custom Css -->
 	<link href="css/custom.css" rel="stylesheet" media="screen">
+	<!-- Live admin-managed banner hero styling -->
+	<style>
+		#live-banner-hero { display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; }
+		.live-banner { position: relative; display: block; border-radius: 12px; overflow: hidden; }
+		.live-banner figure { margin: 0; }
+		.live-banner img { width: 100%; height: 320px; object-fit: cover; display: block; }
+		.live-banner-caption { position: absolute; left: 0; bottom: 0; right: 0; padding: 24px 28px;
+			background: linear-gradient(transparent, rgba(0,0,0,0.6)); color: #fff; }
+		.live-banner-caption h2 { color: #fff; margin: 0 0 4px; font-size: 28px; }
+		.live-banner-caption p { color: #f1f1f1; margin: 0; }
+	</style>
 </head>
 <body>
 
@@ -280,6 +291,8 @@
     <!-- Page Products Section Start -->
     <div class="page-products">
         <div class="container">
+            <!-- Live banner hero (admin-managed, from server/routes/public.js GET /site-content) -->
+            <div id="live-banner-hero"></div>
             <div class="row">
                 <div class="col-xl-3 col-lg-4">
                     <!-- Page Single Sidebar Start -->
@@ -478,12 +491,14 @@
                                                 ? '<span>$' + Number(product.compare_at_price).toFixed(2) + '</span>'
                                                 : '';
                                             var detailUrl = 'product-single.html?slug=' + encodeURIComponent(product.slug);
+                                            // Use the admin-uploaded photo (product.image_url); fall back to the template placeholder.
+                                            var imgSrc = product.image_url || 'images/product-image-1.png';
                                             return (
                                                 '<div class="product-item wow fadeInUp">' +
                                                 '  <div class="product-item-header">' +
                                                 '    <div class="product-item-image">' +
                                                 '      <a href="' + detailUrl + '">' +
-                                                '        <figure><img src="images/product-image-1.png" alt=""></figure>' +
+                                                '        <figure><img src="' + imgSrc + '" alt="' + product.name + '"></figure>' +
                                                 '      </a>' +
                                                 '    </div>' +
                                                 '  </div>' +
@@ -507,6 +522,25 @@
                                     .then(function (res) { return res.json(); })
                                     .then(function (data) {
                                         var settings = data.settings || {};
+
+                                        // Render admin-managed banners (those that have an image) as a hero strip.
+                                        var banners = (data.banners || []).filter(function (b) { return b.image_url; });
+                                        var heroEl = document.getElementById('live-banner-hero');
+                                        if (heroEl && banners.length > 0) {
+                                            heroEl.innerHTML = banners.map(function (b) {
+                                                var caption =
+                                                    '<div class="live-banner-caption">' +
+                                                    '  <h2>' + (b.title || '') + '</h2>' +
+                                                    (b.subtitle ? '<p>' + b.subtitle + '</p>' : '') +
+                                                    '</div>';
+                                                var inner =
+                                                    '<figure><img src="' + b.image_url + '" alt="' + (b.title || '') + '"></figure>' + caption;
+                                                return b.link_url
+                                                    ? '<a class="live-banner" href="' + b.link_url + '">' + inner + '</a>'
+                                                    : '<div class="live-banner">' + inner + '</div>';
+                                            }).join('');
+                                        }
+
                                         if (settings.announcement_text) {
                                             document.getElementById('live-announcement').innerHTML =
                                                 '<i class="fa-regular fa-clock"></i> ' + settings.announcement_text;

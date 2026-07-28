@@ -11,7 +11,7 @@ const router = Router();
 router.get('/products', async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('products')
-    .select('id, name, slug, description, base_price, compare_at_price, category:categories(id, name, slug), product_variants(id, size, color, price, stock_quantity)')
+    .select('id, name, slug, description, image_url, base_price, compare_at_price, category:categories(id, name, slug), product_variants(id, size, color, price, stock_quantity)')
     .eq('status', 'active')
     .order('created_at', { ascending: false });
 
@@ -56,7 +56,7 @@ router.get('/faqs', async (req, res) => {
 router.get('/site-content', async (req, res) => {
   const [{ data: settings }, { data: banners }] = await Promise.all([
     supabaseAdmin.from('settings').select('site_title, announcement_text, footer_copyright_text, maintenance_mode').single(),
-    supabaseAdmin.from('banners').select('id, title, subtitle, link_url').eq('is_active', true).order('sort_order', { ascending: true }),
+    supabaseAdmin.from('banners').select('id, title, subtitle, link_url, image_url').eq('is_active', true).order('sort_order', { ascending: true }),
   ]);
 
   res.json({ settings: settings || {}, banners: banners || [] });

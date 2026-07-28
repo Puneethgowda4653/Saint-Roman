@@ -21,6 +21,12 @@ import auditRoutes from './routes/audit.js';
 import bannersRoutes from './routes/banners.js';
 import teamRoutes from './routes/team.js';
 import influencersRoutes from './routes/influencers.js';
+import marketingRoutes from './routes/marketing.js';
+import shippingRoutes from './routes/shipping.js';
+import crmRoutes from './routes/crm.js';
+import aiRoutes from './routes/ai.js';
+import uploadRoutes from './routes/upload.js';
+import mediaRoutes from './routes/media.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -40,7 +46,8 @@ app.use(cors({
     callback(new Error('Not allowed by CORS'));
   }
 }));
-app.use(express.json());
+// Limit raised from the 100kb default so base64-encoded image uploads (/api/upload/image) fit.
+app.use(express.json({ limit: '10mb' }));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
@@ -64,6 +71,12 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/banners', bannersRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/influencers', influencersRoutes);
+app.use('/api/marketing', marketingRoutes);
+app.use('/api/shipping', shippingRoutes);
+app.use('/api/crm', crmRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/media', mediaRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

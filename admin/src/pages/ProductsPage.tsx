@@ -23,6 +23,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useApiResource } from '@/hooks/useSupabase'
 import { apiFetch } from '@/lib/api'
 import { toast } from 'sonner'
+import { ImageUpload } from '@/components/shared/ImageUpload'
 
 interface Category {
   id: string
@@ -41,6 +42,7 @@ interface Product {
   name: string
   slug: string
   description: string | null
+  image_url: string | null
   sku: string | null
   barcode: string | null
   brand: string | null
@@ -71,6 +73,7 @@ export function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
   const [sku, setSku] = useState('')
   const [barcode, setBarcode] = useState('')
   const [brand, setBrand] = useState('')
@@ -87,6 +90,7 @@ export function ProductsPage() {
     setEditingId(null)
     setName('')
     setDescription('')
+    setImageUrl('')
     setSku('')
     setBarcode('')
     setBrand('')
@@ -112,6 +116,7 @@ export function ProductsPage() {
     setEditingId(product.id)
     setName(product.name)
     setDescription(product.description ?? '')
+    setImageUrl(product.image_url ?? '')
     setSku(product.sku ?? '')
     setBarcode(product.barcode ?? '')
     setBrand(product.brand ?? '')
@@ -142,6 +147,7 @@ export function ProductsPage() {
         name,
         slug: slugify(name),
         description,
+        image_url: imageUrl || null,
         sku: sku || null,
         barcode: barcode || null,
         brand: brand || null,
@@ -202,6 +208,10 @@ export function ProductsPage() {
               <div className="flex flex-col gap-2">
                 <Label htmlFor="p-name">Name</Label>
                 <Input id="p-name" value={name} onChange={(e) => setName(e.target.value)} required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label>Product photo</Label>
+                <ImageUpload value={imageUrl} onChange={setImageUrl} folder="ellora/products" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">

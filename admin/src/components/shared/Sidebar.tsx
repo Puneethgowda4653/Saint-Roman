@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, FolderTree, Package, Boxes, ClipboardList, Undo2, Users, Wallet, Newspaper, HelpCircle, Tag, BarChart3, Warehouse, LifeBuoy, ScrollText, Image, UserCog, Megaphone, Settings } from 'lucide-react'
+import { LayoutDashboard, FolderTree, Package, Boxes, ClipboardList, Undo2, Users, Wallet, Newspaper, HelpCircle, Tag, BarChart3, Warehouse, LifeBuoy, ScrollText, Image, ImagePlus, UserCog, Megaphone, LineChart, Truck, Contact, Sparkles, Settings } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -9,16 +9,21 @@ const navItems = [
   { to: '/inventory', label: 'Inventory', icon: Boxes },
   { to: '/orders', label: 'Orders', icon: ClipboardList },
   { to: '/warehouse', label: 'Warehouse', icon: Warehouse },
+  { to: '/shipping', label: 'Shipping', icon: Truck },
   { to: '/returns', label: 'Returns', icon: Undo2 },
   { to: '/customers', label: 'Customers', icon: Users },
+  { to: '/crm', label: 'CRM', icon: Contact },
   { to: '/coupons', label: 'Coupons', icon: Tag },
   { to: '/influencers', label: 'Influencers', icon: Megaphone },
+  { to: '/marketing', label: 'Marketing', icon: LineChart },
   { to: '/finance', label: 'Finance', icon: Wallet },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
+  { to: '/ai', label: 'AI Center', icon: Sparkles },
   { to: '/support', label: 'Support', icon: LifeBuoy },
   { to: '/audit-logs', label: 'Audit Logs', icon: ScrollText },
   { to: '/team', label: 'Team', icon: UserCog },
   { to: '/banners', label: 'Banners', icon: Image },
+  { to: '/media', label: 'Media Library', icon: ImagePlus },
   { to: '/blog-posts', label: 'Blog Posts', icon: Newspaper },
   { to: '/faqs', label: 'FAQs', icon: HelpCircle },
   { to: '/settings', label: 'Settings', icon: Settings },
