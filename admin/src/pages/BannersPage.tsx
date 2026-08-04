@@ -25,7 +25,14 @@ interface Banner {
   image_url: string | null
   sort_order: number
   is_active: boolean
+  placement: string
+  badge_text: string | null
 }
+
+const PLACEMENT_OPTIONS = [
+  { value: 'products_hero', label: 'Products page hero' },
+  { value: 'homepage_offer', label: 'Homepage offer card' },
+]
 
 export function BannersPage() {
   const { data, loading, error, refetch } = useApiResource<{ banners: Banner[] }>('/banners')
@@ -37,6 +44,8 @@ export function BannersPage() {
   const [linkUrl, setLinkUrl] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [sortOrder, setSortOrder] = useState('0')
+  const [placement, setPlacement] = useState('products_hero')
+  const [badgeText, setBadgeText] = useState('')
   const [saving, setSaving] = useState(false)
 
   function resetForm() {
@@ -46,6 +55,8 @@ export function BannersPage() {
     setLinkUrl('')
     setImageUrl('')
     setSortOrder('0')
+    setPlacement('products_hero')
+    setBadgeText('')
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -60,6 +71,8 @@ export function BannersPage() {
     setLinkUrl(banner.link_url ?? '')
     setImageUrl(banner.image_url ?? '')
     setSortOrder(String(banner.sort_order))
+    setPlacement(banner.placement || 'products_hero')
+    setBadgeText(banner.badge_text ?? '')
     setOpen(true)
   }
 
@@ -67,7 +80,15 @@ export function BannersPage() {
     e.preventDefault()
     setSaving(true)
     try {
-      const body = { title, subtitle: subtitle || null, link_url: linkUrl || null, image_url: imageUrl || null, sort_order: Number(sortOrder) || 0 }
+      const body = {
+        title,
+        subtitle: subtitle || null,
+        link_url: linkUrl || null,
+        image_url: imageUrl || null,
+        sort_order: Number(sortOrder) || 0,
+        placement,
+        badge_text: badgeText || null,
+      }
       if (editingId) {
         await apiFetch(`/banners/${editingId}`, { method: 'PUT', body: JSON.stringify(body) })
         toast.success('Banner updated')
@@ -105,6 +126,10 @@ export function BannersPage() {
     }
   }
 
+  function placementLabel(value: string) {
+    return PLACEMENT_OPTIONS.find((o) => o.value === value)?.label ?? value
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -121,12 +146,41 @@ export function BannersPage() {
                 <Input id="b-title" value={title} onChange={(e) => setTitle(e.target.value)} required />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="b-subtitle">Subtitle</Label>
+                <Label htmlFor="b-subtitle">Subtitle / description</Label>
                 <Input id="b-subtitle" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
+                <Label htmlFor="b-placement">Show on</Label>
+                <select
+                  id="b-placement"
+                  value={placement}
+                  onChange={(e) => setPlacement(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  {PLACEMENT_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="b-badge">Badge text (e.g. "50% Off")</Label>
+                <Input
+                  id="b-badge"
+                  value={badgeText}
+                  onChange={(e) => setBadgeText(e.target.value)}
+                  placeholder="50% Off"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="b-link">Link URL</Label>
-                <Input id="b-link" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="products.html" />
+                <Input
+                  id="b-link"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="products.html?category=womens-fashion"
+                />
               </div>
               <div className="flex flex-col gap-2">
                 <Label>Banner image</Label>
@@ -155,7 +209,8 @@ export function BannersPage() {
             <TableRow>
               <TableHead className="w-16">Image</TableHead>
               <TableHead>Title</TableHead>
-              <TableHead>Subtitle</TableHead>
+              <TableHead>Badge</TableHead>
+              <TableHead>Placement</TableHead>
               <TableHead>Order</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-32" />
@@ -171,8 +226,16 @@ export function BannersPage() {
                     <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </TableCell>
-                <TableCell className="font-medium">{banner.title}</TableCell>
-                <TableCell className="text-muted-foreground">{banner.subtitle ?? '—'}</TableCell>
+                <TableCell>
+                  <div className="font-medium">{banner.title}</div>
+                  {banner.subtitle && (
+                    <div className="text-xs text-muted-foreground">{banner.subtitle}</div>
+                  )}
+                </TableCell>
+                <TableCell className="text-muted-foreground">{banner.badge_text ?? '—'}</TableCell>
+                <TableCell>
+                  <Badge variant="outline">{placementLabel(banner.placement)}</Badge>
+                </TableCell>
                 <TableCell className="text-muted-foreground">{banner.sort_order}</TableCell>
                 <TableCell>
                   <Badge
@@ -195,7 +258,7 @@ export function BannersPage() {
             ))}
             {data.banners.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
                   No banners yet.
                 </TableCell>
               </TableRow>

@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,6 +25,9 @@ import { useApiResource } from '@/hooks/useSupabase'
 import { apiFetch } from '@/lib/api'
 import { toast } from 'sonner'
 import { ImageUpload } from '@/components/shared/ImageUpload'
+import { BarcodeSvg } from '@/components/shared/BarcodeSvg'
+import { printBarcodeLabels } from '@/lib/barcodePrint'
+import { Barcode as BarcodeIcon } from 'lucide-react'
 
 interface Category {
   id: string
@@ -86,6 +90,28 @@ export function ProductsPage() {
   const [variants, setVariants] = useState<Variant[]>([{ ...emptyVariant }])
   const [saving, setSaving] = useState(false)
 
+  // Table controls: search, filters, sort, bulk selection. All client-side — the full product
+  // list is already fetched, this just slices/reorders/tags what's shown.
+  const [searchQuery, setSearchQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [stockFilter, setStockFilter] = useState('all')
+  const [sortKey, setSortKey] = useState<'price' | null>(null)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const LOW_STOCK_THRESHOLD = 10
+
+  function stockOf(product: Product) {
+    return product.product_variants.reduce((sum, v) => sum + (v.stock_quantity || 0), 0)
+  }
+
+  function stockLevel(product: Product): 'out' | 'low' | 'in' {
+    const stock = stockOf(product)
+    if (stock === 0) return 'out'
+    if (stock < LOW_STOCK_THRESHOLD) return 'low'
+    return 'in'
+  }
+
   function resetForm() {
     setEditingId(null)
     setName('')
@@ -105,6 +131,82 @@ export function ProductsPage() {
 
   function updateVariant(index: number, patch: Partial<Variant>) {
     setVariants((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)))
+  }
+
+  const visibleProducts = useMemo(() => {
+    let list = data?.products ?? []
+
+    const query = searchQuery.trim().toLowerCase()
+    if (query) {
+      list = list.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          (p.sku ?? '').toLowerCase().includes(query) ||
+          (p.brand ?? '').toLowerCase().includes(query),
+      )
+    }
+    if (categoryFilter !== 'all') {
+      list = list.filter((p) => p.category?.id === categoryFilter)
+    }
+    if (statusFilter !== 'all') {
+      list = list.filter((p) => p.status === statusFilter)
+    }
+    if (stockFilter !== 'all') {
+      list = list.filter((p) => stockLevel(p) === stockFilter)
+    }
+    if (sortKey === 'price') {
+      list = [...list].sort((a, b) => (sortDir === 'asc' ? a.base_price - b.base_price : b.base_price - a.base_price))
+    }
+    return list
+  }, [data, searchQuery, categoryFilter, statusFilter, stockFilter, sortKey, sortDir])
+
+  function toggleSort() {
+    if (sortKey !== 'price') {
+      setSortKey('price')
+      setSortDir('asc')
+    } else {
+      setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    }
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) =>
+      prev.size === visibleProducts.length ? new Set() : new Set(visibleProducts.map((p) => p.id)),
+    )
+  }
+
+  async function bulkSetStatus(newStatus: Product['status']) {
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map((id) => apiFetch(`/products/${id}`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) })),
+      )
+      toast.success(`${selectedIds.size} product${selectedIds.size === 1 ? '' : 's'} set to ${newStatus}`)
+      setSelectedIds(new Set())
+      refetch()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Bulk update failed')
+    }
+  }
+
+  async function bulkDelete() {
+    if (!window.confirm(`Delete ${selectedIds.size} selected product${selectedIds.size === 1 ? '' : 's'}? This can't be undone.`)) return
+    try {
+      await Promise.all(Array.from(selectedIds).map((id) => apiFetch(`/products/${id}`, { method: 'DELETE' })))
+      toast.success(`${selectedIds.size} product${selectedIds.size === 1 ? '' : 's'} deleted`)
+      setSelectedIds(new Set())
+      refetch()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Bulk delete failed')
+    }
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -129,11 +231,11 @@ export function ProductsPage() {
     setVariants(
       product.product_variants.length > 0
         ? product.product_variants.map(({ size, color, price, stock_quantity }) => ({
-            size,
-            color,
-            price,
-            stock_quantity,
-          }))
+          size,
+          color,
+          price,
+          stock_quantity,
+        }))
         : [{ ...emptyVariant }],
     )
     setOpen(true)
@@ -149,7 +251,6 @@ export function ProductsPage() {
         description,
         image_url: imageUrl || null,
         sku: sku || null,
-        barcode: barcode || null,
         brand: brand || null,
         hsn_code: hsnCode || null,
         gst_percent: gstPercent === '' ? 0 : Number(gstPercent),
@@ -245,8 +346,30 @@ export function ProductsPage() {
                   <Input id="p-brand" value={brand} onChange={(e) => setBrand(e.target.value)} />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="p-barcode">Barcode</Label>
-                  <Input id="p-barcode" value={barcode} onChange={(e) => setBarcode(e.target.value)} />
+                  <Label>Barcode</Label>
+                  {editingId ? (
+                    barcode ? (
+                      <div className="flex flex-col gap-2 rounded-md border p-2">
+                        <BarcodeSvg value={barcode} height={40} fontSize={11} />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            printBarcodeLabels([
+                              { id: editingId, name, sku, barcode, base_price: Number(basePrice) || 0 },
+                            ])
+                          }
+                        >
+                          Print label
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Generating…</p>
+                    )
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Auto-generated after you save</p>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -269,7 +392,9 @@ export function ProductsPage() {
                   <Label>Category</Label>
                   <Select value={categoryId} onValueChange={(value) => setCategoryId(value ?? '')}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue placeholder="Select a category">
+                        {(value: string) => categoriesData?.categories.find((c) => c.id === value)?.name}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {categoriesData?.categories.map((c) => (
@@ -284,7 +409,11 @@ export function ProductsPage() {
                   <Label>Status</Label>
                   <Select value={status} onValueChange={(value) => setStatus((value as Product['status']) ?? 'draft')}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue>
+                        {(value: Product['status']) =>
+                          ({ draft: 'Draft', active: 'Active', archived: 'Archived' })[value]
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="draft">Draft</SelectItem>
@@ -361,48 +490,209 @@ export function ProductsPage() {
       )}
 
       {data && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>SKU</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Variants</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-24" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.products.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell className="text-muted-foreground">{product.sku ?? '—'}</TableCell>
-                <TableCell>{product.category?.name ?? '—'}</TableCell>
-                <TableCell>{product.base_price}</TableCell>
-                <TableCell>{product.product_variants?.length ?? 0}</TableCell>
-                <TableCell>
-                  <Badge variant={statusVariant[product.status]}>{product.status}</Badge>
-                </TableCell>
-                <TableCell className="flex justify-end gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(product)}>
-                    Edit
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(product.id, product.name)}>
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {data.products.length === 0 && (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, SKU, or brand"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value ?? 'all')}>
+              <SelectTrigger className="w-[170px]">
+                <SelectValue placeholder="All categories">
+                  {(value: string) =>
+                    value === 'all' ? 'All categories' : (categoriesData?.categories.find((c) => c.id === value)?.name ?? 'All categories')
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {categoriesData?.categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value ?? 'all')}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="All statuses">
+                  {(value: string) =>
+                    ({ all: 'All statuses', draft: 'Draft', active: 'Active', archived: 'Archived' } as Record<string, string>)[value] ?? 'All statuses'
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={stockFilter} onValueChange={(value) => setStockFilter(value ?? 'all')}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="All stock levels">
+                  {(value: string) =>
+                    ({ all: 'All stock levels', in: 'In stock', low: 'Low stock', out: 'Out of stock' } as Record<string, string>)[value] ?? 'All stock levels'
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All stock levels</SelectItem>
+                <SelectItem value="in">In stock</SelectItem>
+                <SelectItem value="low">Low stock</SelectItem>
+                <SelectItem value="out">Out of stock</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-3 rounded-md bg-accent px-3 py-2 text-sm">
+              <span className="font-medium">{selectedIds.size} selected</span>
+              <Button variant="outline" size="sm" onClick={() => bulkSetStatus('active')}>
+                Set active
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => bulkSetStatus('archived')}>
+                Archive
+              </Button>
+              <Button variant="outline" size="sm" className="text-destructive" onClick={bulkDelete}>
+                Delete
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  printBarcodeLabels(
+                    data.products
+                      .filter((p) => selectedIds.has(p.id))
+                      .map((p) => ({ id: p.id, name: p.name, sku: p.sku, barcode: p.barcode, base_price: p.base_price })),
+                  )
+                }
+              >
+                <BarcodeIcon className="mr-1 h-3.5 w-3.5" />
+                Print labels
+              </Button>
+              <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setSelectedIds(new Set())}>
+                Clear
+              </Button>
+            </div>
+          )}
+
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  No products yet.
-                </TableCell>
+                <TableHead className="w-8">
+                  <input
+                    type="checkbox"
+                    checked={visibleProducts.length > 0 && selectedIds.size === visibleProducts.length}
+                    onChange={toggleSelectAll}
+                    aria-label="Select all"
+                  />
+                </TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>
+                  <button type="button" className="flex items-center gap-1" onClick={toggleSort}>
+                    Price
+                    {sortKey === 'price' ? (
+                      sortDir === 'asc' ? (
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      ) : (
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                  </button>
+                </TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-24" />
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {visibleProducts.map((product) => {
+                const level = stockLevel(product)
+                const stock = stockOf(product)
+                return (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(product.id)}
+                        onChange={() => toggleSelected(product.id)}
+                        aria-label={`Select ${product.name}`}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md bg-muted">
+                          {product.image_url && (
+                            <img src={product.image_url} alt="" className="h-full w-full object-cover" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-medium">{product.name}</div>
+                          <div className="text-xs text-muted-foreground">{product.sku ?? 'No SKU'}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{product.category?.name ?? '—'}</TableCell>
+                    <TableCell>{product.base_price}</TableCell>
+                    <TableCell>
+                      {level === 'out' && <Badge variant="destructive">Out of stock</Badge>}
+                      {level === 'low' && (
+                        <Badge className="border-transparent bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400">
+                          Low: {stock}
+                        </Badge>
+                      )}
+                      {level === 'in' && (
+                        <Badge className="border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-400">
+                          In stock: {stock}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant[product.status]}>{product.status}</Badge>
+                    </TableCell>
+                    <TableCell className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={!product.barcode}
+                        title={product.barcode ?? 'No barcode yet'}
+                        onClick={() =>
+                          printBarcodeLabels([
+                            { id: product.id, name: product.name, sku: product.sku, barcode: product.barcode, base_price: product.base_price },
+                          ])
+                        }
+                      >
+                        <BarcodeIcon className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(product)}>
+                        Edit
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(product.id, product.name)}>
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+              {visibleProducts.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
+                    {data.products.length === 0 ? 'No products yet.' : 'No products match your filters.'}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </>
       )}
     </div>
   )

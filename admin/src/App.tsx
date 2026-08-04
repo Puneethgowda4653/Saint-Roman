@@ -8,6 +8,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { CategoriesPage } from '@/pages/CategoriesPage'
 import { ProductsPage } from '@/pages/ProductsPage'
+import { BarcodeScannerPage } from '@/pages/BarcodeScannerPage'
 import { InventoryPage } from '@/pages/InventoryPage'
 import { OrdersPage } from '@/pages/OrdersPage'
 import { BlogPostsPage } from '@/pages/BlogPostsPage'
@@ -40,6 +41,7 @@ function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
               <Route path="/products" element={<ProductsPage />} />
+              <Route path="/barcode-scanner" element={<BarcodeScannerPage />} />
               <Route path="/inventory" element={<InventoryPage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/blog-posts" element={<BlogPostsPage />} />

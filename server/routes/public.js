@@ -9,11 +9,29 @@ const router = Router();
 // active/published rows (no drafts, no cost price, no internal fields like HSN/barcode).
 
 router.get('/products', async (req, res) => {
-  const { data, error } = await supabaseAdmin
+  let query = supabaseAdmin
     .from('products')
     .select('id, name, slug, description, image_url, base_price, compare_at_price, category:categories(id, name, slug), product_variants(id, size, color, price, stock_quantity)')
     .eq('status', 'active')
     .order('created_at', { ascending: false });
+
+  // Optional ?category=<slug> — resolve the slug to an id first, since Supabase can't filter
+  // on a joined table's column directly without an !inner join.
+  const categorySlug = req.query.category;
+  if (categorySlug) {
+    const { data: category, error: categoryError } = await supabaseAdmin
+      .from('categories')
+      .select('id')
+      .eq('slug', categorySlug)
+      .maybeSingle();
+
+    if (categoryError) return res.status(500).json({ error: categoryError.message });
+    if (!category) return res.json({ products: [] }); // unknown slug — no matches, not an error
+
+    query = query.eq('category_id', category.id);
+  }
+
+  const { data, error } = await query;
 
   if (error) return res.status(500).json({ error: error.message });
   res.json({ products: data });
@@ -56,10 +74,29 @@ router.get('/faqs', async (req, res) => {
 router.get('/site-content', async (req, res) => {
   const [{ data: settings }, { data: banners }] = await Promise.all([
     supabaseAdmin.from('settings').select('site_title, announcement_text, footer_copyright_text, maintenance_mode').single(),
-    supabaseAdmin.from('banners').select('id, title, subtitle, link_url, image_url').eq('is_active', true).order('sort_order', { ascending: true }),
+    supabaseAdmin.from('banners').select('id, title, subtitle, link_url, image_url, badge_text, placement').eq('is_active', true).order('sort_order', { ascending: true }),
   ]);
 
   res.json({ settings: settings || {}, banners: banners || [] });
+});
+
+// New endpoint: homepage offer banners only
+router.get('/banners', async (req, res) => {
+  const placement = req.query.placement || null;
+
+  let query = supabaseAdmin
+    .from('banners')
+    .select('id, title, subtitle, link_url, image_url, badge_text, placement')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
+
+  if (placement) {
+    query = query.eq('placement', placement);
+  }
+
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ banners: data || [] });
 });
 
 router.post('/support-tickets', async (req, res) => {
@@ -153,34 +190,33 @@ router.post('/orders', async (req, res) => {
   if (coupon_code) {
     const couponResult = await validateCoupon(coupon_code, subtotal);
     if (!couponResult.valid) {
-      return res.status(400).json({ error: couponResult.message || 'Invalid coupon' });
+      return res.status(400).json({ error: couponResult.reason || 'Coupon is not valid' });
     }
     discountAmount = couponResult.discount;
-    appliedCouponCode = couponResult.coupon.code;
-    appliedCouponUsageCount = couponResult.coupon.usage_count;
+    appliedCouponCode = couponResult.code;
+    appliedCouponUsageCount = couponResult.usage_count;
   }
 
-  // Match or create a customer record by email, so repeat shoppers accumulate real order history.
-  let customerId = null;
-  if (customer_email) {
-    const { data: existingCustomer } = await supabaseAdmin
-      .from('customers')
-      .select('id')
-      .eq('email', customer_email)
-      .maybeSingle();
+  const total = Math.max(0, subtotal - discountAmount);
 
+  // --- Customer upsert (by phone, since we don't have auth) ---
+  let customerId = null;
+  {
+    const { data: existingCustomer } = await supabaseAdmin.from('customers').select('id').eq('phone', customer_phone).maybeSingle();
     if (existingCustomer) {
       customerId = existingCustomer.id;
     } else {
-      const { data: newCustomer } = await supabaseAdmin
+      const { data: newCustomer, error: customerError } = await supabaseAdmin
         .from('customers')
-        .insert({ name: customer_name, email: customer_email, phone: customer_phone })
+        .insert({ name: customer_name, email: customer_email || null, phone: customer_phone, address: shipping_address || null })
         .select('id')
         .single();
-      customerId = newCustomer ? newCustomer.id : null;
+      if (customerError) return res.status(500).json({ error: customerError.message });
+      customerId = newCustomer.id;
     }
   }
 
+  // --- Create the order ---
   const { data: order, error: orderError } = await supabaseAdmin
     .from('orders')
     .insert({
@@ -190,38 +226,49 @@ router.post('/orders', async (req, res) => {
       customer_email: customer_email || null,
       customer_phone,
       shipping_address: shipping_address || null,
+      notes: notes || null,
       subtotal,
-      shipping_fee: 0,
       discount_amount: discountAmount,
       coupon_code: appliedCouponCode,
-      total: Math.max(0, subtotal - discountAmount),
-      notes: notes || null,
+      total,
+      status: 'pending',
+      payment_method: 'cod',
+      payment_status: 'unpaid',
     })
-    .select()
+    .select('id, order_number')
     .single();
 
-  if (orderError) return res.status(400).json({ error: orderError.message });
+  if (orderError) return res.status(500).json({ error: orderError.message });
 
-  const orderItemRows = lineItems.map((item) => ({ ...item, order_id: order.id }));
-  const { error: itemsError } = await supabaseAdmin.from('order_items').insert(orderItemRows);
-  if (itemsError) return res.status(400).json({ error: itemsError.message });
+  // --- Insert order items ---
+  const orderItems = lineItems.map((li) => ({
+    order_id: order.id,
+    variant_id: li.variant_id,
+    product_name: li.product_name,
+    variant_label: li.variant_label,
+    quantity: li.quantity,
+    unit_price: li.unit_price,
+    line_total: li.line_total,
+  }));
 
-  for (const item of lineItems) {
-    const variant = variantMap.get(item.variant_id);
-    await supabaseAdmin
-      .from('product_variants')
-      .update({ stock_quantity: variant.stock_quantity - item.quantity })
-      .eq('id', item.variant_id);
+  const { error: itemsError } = await supabaseAdmin.from('order_items').insert(orderItems);
+  if (itemsError) return res.status(500).json({ error: itemsError.message });
+
+  // --- Decrement stock ---
+  for (const li of lineItems) {
+    await supabaseAdmin.rpc('decrement_stock', { p_variant_id: li.variant_id, p_qty: li.quantity }).catch(() => { });
   }
 
+  // --- Increment coupon usage ---
   if (appliedCouponCode) {
     await supabaseAdmin
       .from('coupons')
       .update({ usage_count: appliedCouponUsageCount + 1 })
-      .eq('code', appliedCouponCode);
+      .eq('code', appliedCouponCode)
+      .catch(() => { });
   }
 
-  res.status(201).json({ order: { id: order.id, order_number: order.order_number, total: order.total, discount_amount: discountAmount } });
+  res.status(201).json({ order: { id: order.id, order_number: order.order_number } });
 });
 
 export default router;

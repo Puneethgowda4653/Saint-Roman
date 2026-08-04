@@ -2,8 +2,23 @@ import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 import { logAudit } from '../lib/audit.js';
+import { generateUniqueBarcode } from '../lib/barcode.js';
 
 const router = Router();
+
+// Barcode scan-to-lookup (Module: Internal Barcode Labels) — admin-only, same as every other
+// route in this file. Declared before `/:id` so `/barcode/ELR...` never gets swallowed by the
+// `:id` param route.
+router.get('/barcode/:code', requireAuth, async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('products')
+    .select('*, category:categories(id, name), product_variants(*), product_images(*)')
+    .eq('barcode', req.params.code)
+    .single();
+
+  if (error) return res.status(404).json({ error: 'No product matches that barcode' });
+  res.json({ product: data });
+});
 
 router.get('/', requireAuth, async (req, res) => {
   const { data, error } = await supabaseAdmin
@@ -27,7 +42,12 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 router.post('/', requireAuth, async (req, res) => {
-  const { variants, ...product } = req.body;
+  const { variants, barcode: _ignoredBarcode, ...product } = req.body;
+
+  // Barcode is always server-generated, never client-supplied — same reasoning as SKU
+  // scanners at Myntra/Flipkart: it has to be guaranteed unique and stable, so the admin
+  // form no longer accepts one (see ProductsPage.tsx).
+  product.barcode = await generateUniqueBarcode();
 
   const { data: created, error } = await supabaseAdmin.from('products').insert(product).select().single();
   if (error) return res.status(400).json({ error: error.message });
@@ -42,9 +62,19 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
-  const { variants, ...product } = req.body;
+  const { variants, barcode: _ignoredBarcode, ...product } = req.body;
 
-  const { data: before } = await supabaseAdmin.from('products').select('base_price, name').eq('id', req.params.id).single();
+  const { data: before } = await supabaseAdmin
+    .from('products')
+    .select('base_price, name, barcode')
+    .eq('id', req.params.id)
+    .single();
+
+  // Barcode is immutable once assigned (client can never overwrite it — stripped above).
+  // The only exception is a pre-backfill product that somehow still has none.
+  if (before && !before.barcode) {
+    product.barcode = await generateUniqueBarcode();
+  }
 
   const { data: updated, error } = await supabaseAdmin
     .from('products')

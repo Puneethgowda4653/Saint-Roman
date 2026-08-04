@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, FolderTree, Package, Boxes, ClipboardList, Undo2, Users, Wallet, Newspaper, HelpCircle, Tag, BarChart3, Warehouse, LifeBuoy, ScrollText, Image, ImagePlus, UserCog, Megaphone, LineChart, Truck, Contact, Sparkles, Settings } from 'lucide-react'
+import { LayoutDashboard, FolderTree, Package, Boxes, ClipboardList, Undo2, Users, Wallet, Newspaper, HelpCircle, Tag, BarChart3, Warehouse, LifeBuoy, ScrollText, Image, ImagePlus, UserCog, Megaphone, LineChart, Truck, Contact, Sparkles, Settings, Barcode } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/categories', label: 'Categories', icon: FolderTree },
   { to: '/products', label: 'Products', icon: Package },
+  { to: '/barcode-scanner', label: 'Barcode Scanner', icon: Barcode },
   { to: '/inventory', label: 'Inventory', icon: Boxes },
   { to: '/orders', label: 'Orders', icon: ClipboardList },
   { to: '/warehouse', label: 'Warehouse', icon: Warehouse },
