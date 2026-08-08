@@ -27,7 +27,8 @@ import crmRoutes from './routes/crm.js';
 import aiRoutes from './routes/ai.js';
 import uploadRoutes from './routes/upload.js';
 import mediaRoutes from './routes/media.js';
-
+import tagsRoutes from './routes/tags.js';
+import customerAccountRoutes from './routes/customer.js';
 const app = express();
 const PORT = process.env.PORT || 4000;
 const CORS_ORIGIN = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',');
@@ -78,7 +79,10 @@ app.use('/api/crm', crmRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/tags', tagsRoutes);
 
+// after the other app.use lines:
+app.use('/api/customer', customerAccountRoutes);
 app.use((err, req, res, next) => {
   console.error(err);
   if (err.type === 'entity.too.large') {

@@ -276,6 +276,10 @@
 
     <!-- Hero Section Start -->
     <div class="hero dark-section parallaxie">
+        <video class="hero-video-bg" autoplay muted loop playsinline>
+            <source src="videos/hero-bg-video.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
         <div class="container">
             <div class="row">
                 <div class="col-lg-7">
@@ -426,6 +430,10 @@
                                         if (!match) return; // no category with this exact name in the DB yet — leave the fallback link
                                         var url = 'products.html?category=' + encodeURIComponent(match.slug);
                                         item.querySelectorAll('a').forEach(function (a) { a.setAttribute('href', url); });
+                                        if (match.image_url) {
+                                            var imgEl = item.querySelector('img');
+                                            if (imgEl) imgEl.setAttribute('src', match.image_url);
+                                        }
                                     });
                                 })
                                 .catch(function () { /* keep the default unfiltered links */ });
@@ -1691,8 +1699,9 @@
                             <div id="collapse2" class="accordion-collapse collapse" role="region"
                                 aria-labelledby="heading2" data-bs-parent="#accordion">
                                 <div class="accordion-body">
-                                    <p>We offer a wide range of fashion and lifestyle products including clothing,
-                                        footwear, accessories, beauty essentials, and modern lifestyle collections.</p>
+                                    <p>Absolutely. Every product is sourced from verified brands and partners, and
+                                        goes through a quality check before it's listed, so what you see is exactly
+                                        what you get.</p>
                                 </div>
                             </div>
                         </div>
@@ -1703,14 +1712,15 @@
                             <h2 class="accordion-header" id="heading3">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse3" aria-expanded="true" aria-controls="collapse3">
-                                    Q3. Can I cancel my order after placing it?
+                                    Q3. How do I apply a coupon on my order?
                                 </button>
                             </h2>
                             <div id="collapse3" class="accordion-collapse collapse" role="region"
                                 aria-labelledby="heading3" data-bs-parent="#accordion">
                                 <div class="accordion-body">
-                                    <p>We offer a wide range of fashion and lifestyle products including clothing,
-                                        footwear, accessories, beauty essentials, and modern lifestyle collections.</p>
+                                    <p>At checkout, enter your coupon code in the "Apply Coupon" field on the cart
+                                        page and click Apply — the discount will reflect in your order total right
+                                        away, before you proceed to payment.</p>
                                 </div>
                             </div>
                         </div>
@@ -1727,8 +1737,8 @@
                             <div id="collapse4" class="accordion-collapse collapse" role="region"
                                 aria-labelledby="heading4" data-bs-parent="#accordion">
                                 <div class="accordion-body">
-                                    <p>We offer a wide range of fashion and lifestyle products including clothing,
-                                        footwear, accessories, beauty essentials, and modern lifestyle collections.</p>
+                                    <p>We accept all major credit and debit cards, UPI, net banking, and popular
+                                        digital wallets, along with cash on delivery for eligible orders.</p>
                                 </div>
                             </div>
                         </div>
@@ -1745,8 +1755,9 @@
                             <div id="collapse5" class="accordion-collapse collapse" role="region"
                                 aria-labelledby="heading5" data-bs-parent="#accordion">
                                 <div class="accordion-body">
-                                    <p>We offer a wide range of fashion and lifestyle products including clothing,
-                                        footwear, accessories, beauty essentials, and modern lifestyle collections.</p>
+                                    <p>New collections drop every season, with smaller style refreshes and
+                                        limited-edition pieces added throughout the year — so it's worth checking
+                                        back often.</p>
                                 </div>
                             </div>
                         </div>
@@ -2116,6 +2127,7 @@
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
     <script src="js/homepage-dynamic-sections.js"></script>
+    <script src="js/mega-menu-dynamic.js"></script>
 </body>
 
 </html>

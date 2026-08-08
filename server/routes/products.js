@@ -6,9 +6,7 @@ import { generateUniqueBarcode } from '../lib/barcode.js';
 
 const router = Router();
 
-// Barcode scan-to-lookup (Module: Internal Barcode Labels) — admin-only, same as every other
-// route in this file. Declared before `/:id` so `/barcode/ELR...` never gets swallowed by the
-// `:id` param route.
+// Barcode scan-to-lookup — declared before `/:id` so `/barcode/ELR...` doesn't get swallowed.
 router.get('/barcode/:code', requireAuth, async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('products')
@@ -44,10 +42,13 @@ router.get('/:id', requireAuth, async (req, res) => {
 router.post('/', requireAuth, async (req, res) => {
   const { variants, barcode: _ignoredBarcode, ...product } = req.body;
 
-  // Barcode is always server-generated, never client-supplied — same reasoning as SKU
-  // scanners at Myntra/Flipkart: it has to be guaranteed unique and stable, so the admin
-  // form no longer accepts one (see ProductsPage.tsx).
+  // Barcode is always server-generated, never client-supplied
   product.barcode = await generateUniqueBarcode();
+
+  // Normalize tags to lowercase array
+  if (product.tags && Array.isArray(product.tags)) {
+    product.tags = product.tags.map(t => t.trim().toLowerCase()).filter(Boolean);
+  }
 
   const { data: created, error } = await supabaseAdmin.from('products').insert(product).select().single();
   if (error) return res.status(400).json({ error: error.message });
@@ -70,10 +71,14 @@ router.put('/:id', requireAuth, async (req, res) => {
     .eq('id', req.params.id)
     .single();
 
-  // Barcode is immutable once assigned (client can never overwrite it — stripped above).
-  // The only exception is a pre-backfill product that somehow still has none.
+  // Barcode is immutable once assigned. Only generate if missing.
   if (before && !before.barcode) {
     product.barcode = await generateUniqueBarcode();
+  }
+
+  // Normalize tags to lowercase array
+  if (product.tags && Array.isArray(product.tags)) {
+    product.tags = product.tags.map(t => t.trim().toLowerCase()).filter(Boolean);
   }
 
   const { data: updated, error } = await supabaseAdmin
@@ -95,11 +100,6 @@ router.put('/:id', requireAuth, async (req, res) => {
     });
   }
 
-  // Upsert by (size, color) instead of delete-then-recreate — the earlier approach minted a fresh
-  // id for every variant on every product edit, which via order_items.variant_id's ON DELETE SET
-  // NULL silently orphaned all historical order/order_item links to that variant (breaking anything
-  // that joins back through variant_id, e.g. the Profit Report). Preserving ids for variants whose
-  // (size, color) still exists keeps that history intact; only genuinely removed variants are deleted.
   if (Array.isArray(variants)) {
     const { data: existingVariants } = await supabaseAdmin
       .from('product_variants')

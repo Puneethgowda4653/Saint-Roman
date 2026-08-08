@@ -31,52 +31,104 @@
     <link rel="stylesheet" href="css/mousecursor.css">
     <!-- Main Custom Css -->
     <link href="css/custom.css" rel="stylesheet" media="screen">
-    <!-- Live admin-managed banner hero styling -->
+    <!-- Compact banner cards (like homepage Best Offers) -->
     <style>
         #live-banner-hero {
             display: flex;
-            flex-direction: column;
-            gap: 16px;
+            gap: 20px;
             margin-bottom: 32px;
+            flex-wrap: wrap;
         }
 
         .live-banner {
-            position: relative;
-            display: block;
+            flex: 1 1 300px;
+            display: flex;
+            background: #fff;
             border-radius: 12px;
             overflow: hidden;
+            border: 1px solid #eee;
+            text-decoration: none;
+            color: inherit;
+            transition: box-shadow 0.3s;
+        }
+
+        .live-banner:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         .live-banner figure {
             margin: 0;
+            flex-shrink: 0;
+            width: 200px;
         }
 
         .live-banner img {
             width: 100%;
-            height: 320px;
+            height: 100%;
             object-fit: cover;
             display: block;
         }
 
-        .live-banner-caption {
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            padding: 24px 28px;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
-            color: #fff;
+        .live-banner-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px 24px;
+            gap: 6px;
         }
 
-        .live-banner-caption h2 {
-            color: #fff;
-            margin: 0 0 4px;
-            font-size: 28px;
+        .live-banner-badge {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
         }
 
-        .live-banner-caption p {
-            color: #f1f1f1;
+        .live-banner-content h2 {
             margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111;
+            line-height: 1.3;
+        }
+
+        .live-banner-content p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .live-banner-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            padding: 8px 20px;
+            background: #111;
+            color: #fff;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            width: fit-content;
+            transition: background 0.2s;
+        }
+
+        .live-banner-btn:hover {
+            background: #333;
+        }
+
+        @media (max-width: 768px) {
+            #live-banner-hero {
+                flex-direction: column;
+            }
+
+            .live-banner {
+                flex: 1 1 100%;
+            }
+
+            .live-banner figure {
+                width: 140px;
+            }
         }
     </style>
 </head>
@@ -160,7 +212,6 @@
                                         <!-- Mega Menu Box Start -->
                                         <li class="mega-menu-box">
                                             <div class="mega-menu-links-box">
-                                                <!-- Mega Menu Link Start -->
                                                 <div class="mega-menu-link">
                                                     <h2>Shop by collection</h2>
                                                     <ul>
@@ -172,9 +223,6 @@
                                                         <li><a href="products.html">Footwear Collection</a></li>
                                                     </ul>
                                                 </div>
-                                                <!-- Mega Menu Link End -->
-
-                                                <!-- Mega Menu Link Start -->
                                                 <div class="mega-menu-link">
                                                     <h2>Shop features</h2>
                                                     <ul>
@@ -189,14 +237,9 @@
                                                         <li><a href="account-dashboard.html">My Account</a></li>
                                                     </ul>
                                                 </div>
-                                                <!-- Mega Menu Link End -->
                                             </div>
-
-                                            <!-- Mega Menu Items List Start -->
                                             <div class="mega-menu-items-list">
-                                                <!-- Mega Menu Item Start -->
                                                 <div class="mega-menu-item">
-                                                    <!-- Mega Menu Item Image Start -->
                                                     <div class="mega-menu-item-image">
                                                         <a href="products.html" data-cursor-text="View">
                                                             <figure class="image-anime">
@@ -204,20 +247,12 @@
                                                             </figure>
                                                         </a>
                                                     </div>
-                                                    <!-- Mega Menu Item Image End -->
-
-                                                    <!-- Mega Menu Item Content Start -->
                                                     <div class="mega-menu-item-content">
                                                         <h2><a href="products.html">New Arrivals</a></h2>
                                                         <p>Discover the latest fashion arrivals and exclusive </p>
                                                     </div>
-                                                    <!-- Mega Menu Item Content End -->
                                                 </div>
-                                                <!-- Mega Menu Item End -->
-
-                                                <!-- Mega Menu Item Start -->
                                                 <div class="mega-menu-item">
-                                                    <!-- Mega Menu Item Image Start -->
                                                     <div class="mega-menu-item-image">
                                                         <a href="products.html" data-cursor-text="View">
                                                             <figure class="image-anime">
@@ -225,43 +260,27 @@
                                                             </figure>
                                                         </a>
                                                     </div>
-                                                    <!-- Mega Menu Item Image End -->
-
-                                                    <!-- Mega Menu Item Content Start -->
                                                     <div class="mega-menu-item-content">
                                                         <h2><a href="products.html">Summer Collection</a></h2>
                                                         <p>Discover our Summer Collection featuring breathable fabrics.
                                                         </p>
                                                     </div>
-                                                    <!-- Mega Menu Item Content End -->
                                                 </div>
-                                                <!-- Mega Menu Item End -->
-
-                                                <!-- Mega Menu Item Start -->
                                                 <div class="mega-menu-item big-offer-box">
-                                                    <!-- Mega Menu Item Image Start -->
                                                     <div class="mega-menu-item-image">
                                                         <figure>
                                                             <img src="images/mega-menu-item-image-3.jpg" alt="">
                                                         </figure>
                                                     </div>
-                                                    <!-- Mega Menu Item Image End -->
-
-                                                    <!-- Mega Menu Item Content Start -->
                                                     <div class="mega-menu-item-content">
                                                         <span>-special offer-</span>
                                                         <h2>Big Sale</h2>
                                                         <h3>50% Off</h3>
                                                     </div>
-                                                    <!-- Mega Menu Item Content End -->
                                                 </div>
-                                                <!-- Mega Menu Item End -->
                                             </div>
-                                            <!-- Mega Menu Items List End -->
                                         </li>
-                                        <!-- Mega Menu Box End -->
                                     </ul>
-                                    <!-- Dropdown Menu End -->
                                 </li>
                                 <li class="nav-item"><a class="nav-link" href="blog.html">Blog</a></li>
                                 <li class="nav-item submenu"><a class="nav-link" href="#">My Account</a>
@@ -303,7 +322,6 @@
                                 </li>
                             </ul>
                         </div>
-                        <!-- Header Contact Info Start -->
                         <div class="header-contact-info">
                             <ul>
                                 <li><img src="images/icon-phone-white.svg" alt=""> <a href="tel:123458985">+(0) 123 458
@@ -312,11 +330,9 @@
                                         href="mailto:support@fashion.com">support@fashion.com</a></li>
                             </ul>
                         </div>
-                        <!-- Header Contact Info End -->
                     </div>
                     <div class="navbar-toggle"></div>
                 </div>
-                <!-- Main Menu End -->
             </nav>
             <div class="responsive-menu"></div>
         </div>
@@ -328,7 +344,6 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <!-- Page Header Box Start -->
                     <div class="page-header-box">
                         <h1 class="text-anime-style-3" data-cursor="-opaque">Premium watch</h1>
                         <nav class="wow fadeInUp">
@@ -338,7 +353,6 @@
                             </ol>
                         </nav>
                     </div>
-                    <!-- Page Header Box End -->
                 </div>
             </div>
         </div>
@@ -348,13 +362,11 @@
     <!-- Page Products Section Start -->
     <div class="page-products">
         <div class="container">
-            <!-- Live banner hero (admin-managed, from server/routes/public.js GET /site-content) -->
+            <!-- Live banner hero (admin-managed, compact card layout) -->
             <div id="live-banner-hero"></div>
             <div class="row">
                 <div class="col-xl-3 col-lg-4">
-                    <!-- Page Single Sidebar Start -->
                     <div class="page-single-sidebar">
-                        <!-- Page Category Filter Header Start -->
                         <div class="product-category-filter-header wow fadeInUp">
                             <div class="product-category-filter-title">
                                 <img src="images/icon-filter.svg" alt="">
@@ -364,436 +376,453 @@
                                 <a href="#">Clear All</a>
                             </div>
                         </div>
-                        <!-- Page Category Filter Header End -->
-
-                        <!-- Product Category Item List Start -->
-                        <div class="product-category-item-list">
-                            <!-- Product Category Item Start -->
-                            <div class="product-category-item wow fadeInUp" data-wow-delay="0.2s">
-                                <h2 class="product-category-item-title">Categories</h2>
-                                <ul>
-                                    <li>
-                                        <input type="checkbox" id="Women's" name="Categories" value="Women's">
-                                        <label for="Women's">Women's Fashion (520)</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Men's" name="Categories" value="Men's">
-                                        <label for="Men's">Men's Fashion (410)</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Footwear" name="Categories" value="Footwear">
-                                        <label for="Footwear">Footwear (280)</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Accessories" name="Categories" value="Accessories">
-                                        <label for="Accessories">Accessories (195)</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Beauty_Care" name="Categories" value="Beauty_Care">
-                                        <label for="Beauty_Care">Beauty & Care (160)</label>
-                                    </li>
-                                </ul>
-                            </div>
-                            <!-- Product Category Item End -->
-
-                            <!-- Product Category Item Start -->
-                            <div class="product-category-item wow fadeInUp" data-wow-delay="0.4s">
-                                <h2 class="product-category-item-title">Collection</h2>
-                                <ul>
-                                    <li>
-                                        <input type="checkbox" id="Summer_Collection" name="Collection"
-                                            value="Summer_Collection">
-                                        <label for="Summer_Collection">Summer Collection</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Streetwear" name="Collection" value="Streetwear">
-                                        <label for="Streetwear">Streetwear</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Minimal_Style" name="Collection"
-                                            value="Minimal_Style">
-                                        <label for="Minimal_Style">Minimal Style</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Casual_Wear" name="Collection" value="Casual_Wear">
-                                        <label for="Casual_Wear">Casual Wear</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Luxury_Fashion" name="Collection"
-                                            value="Luxury_Fashion">
-                                        <label for="Luxury_Fashion">Luxury Fashion</label>
-                                    </li>
-                                </ul>
-                            </div>
-                            <!-- Product Category Item End -->
-
-                            <!-- Product Category Item Start -->
-                            <div class="product-category-item wow fadeInUp" data-wow-delay="0.6s">
-                                <h2 class="product-category-item-title">Color</h2>
-                                <ul>
-                                    <li>
-                                        <input type="checkbox" id="Beige" name="Color" value="Beige">
-                                        <label for="Beige">Beige</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Champagne" name="Color" value="Champagne">
-                                        <label for="Champagne">Champagne</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Multi_Color" name="Color" value="Multi_Color">
-                                        <label for="Multi_Color">Multi-Color/Other</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Orange" name="Color" value="Orange">
-                                        <label for="Orange">Orange</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="Purple" name="Color" value="Purple">
-                                        <label for="Purple">Purple</label>
-                                    </li>
-                                </ul>
-                            </div>
-                            <!-- Product Category Item End -->
-
-                            <!-- Product Category Item Start -->
-                            <div class="product-category-item wow fadeInUp" data-wow-delay="0.8s">
-                                <h2 class="product-category-item-title">Size</h2>
-                                <ul>
-                                    <li>
-                                        <input type="checkbox" id="XL" name="interest" value="XL">
-                                        <label for="XL">XL</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="XS" name="interest" value="XS">
-                                        <label for="XS">XS</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="s" name="interest" value="s">
-                                        <label for="s">s</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="m" name="interest" value="m">
-                                        <label for="m">m</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="l" name="interest" value="l">
-                                        <label for="l">l</label>
-                                    </li>
-                                    <li>
-                                        <input type="checkbox" id="XXL" name="interest" value="XXL">
-                                        <label for="XXL">XXL</label>
-                                    </li>
-                                </ul>
-                            </div>
-                            <!-- Product Category Item End -->
+                        <div class="product-category-item-list" id="live-filter-sidebar">
+                            <p class="wow fadeInUp">Loading filters…</p>
                         </div>
-                        <!-- Product Category Item List End -->
                     </div>
-                    <!-- Page Single Sidebar End -->
                 </div>
 
                 <div class="col-xl-9 col-lg-8">
-                    <!-- Product item List Box Start -->
-                    <div class="product-item-list-box">
-                        <!-- Product Category Filter Header Start -->
-                        <div class="product-category-filter-header wow fadeInUp">
-                            <div class="product-category-filter-title">
-                                <h2 id="products-heading">Showing all results</h2>
-                            </div>
-                            <div class="product-category-result-info">
-                                <div class="product-category-result-pagination">
-                                    <ul>
-                                        <li><a href="#">1</a></li>
-                                        <li><a href="#">6</a></li>
-                                        <li><a href="#">11</a></li>
-                                        <li><a href="#">15</a></li>
-                                    </ul>
+                    <div class="col-xl-9 col-lg-8">
+                        <div class="product-item-list-box">
+                            <div class="product-category-filter-header wow fadeInUp">
+                                <div class="product-category-filter-title">
+                                    <h2 id="products-heading">Showing all results</h2>
                                 </div>
-                                <div class="product-category-sorting-list">
-                                    <select name="sorting_list" class="form-control form-select" id="sorting_list"
-                                        required>
-                                        <option value="" disabled selected>Default Sorting</option>
-                                        <option value="Low_to_High">Low to High</option>
-                                        <option value="High_to_Low">High to Low</option>
-                                        <option value="Popularity">Popularity</option>
-                                        <option value="Best_Sellers">Best Sellers</option>
-                                        <option value="Trending">Trending</option>
-                                        <option value="Most_Reviewed">Most Reviewed</option>
-                                    </select>
+                                <div class="product-category-result-info">
+                                    <div class="product-category-result-pagination">
+                                        <ul>
+                                            <li><a href="#">1</a></li>
+                                            <li><a href="#">6</a></li>
+                                            <li><a href="#">11</a></li>
+                                            <li><a href="#">15</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="product-category-sorting-list">
+                                        <select name="sorting_list" class="form-control form-select" id="sorting_list"
+                                            required>
+                                            <option value="" disabled selected>Default Sorting</option>
+                                            <option value="Low_to_High">Low to High</option>
+                                            <option value="High_to_Low">High to Low</option>
+                                            <option value="Popularity">Popularity</option>
+                                            <option value="Best_Sellers">Best Sellers</option>
+                                            <option value="Trending">Trending</option>
+                                            <option value="Most_Reviewed">Most Reviewed</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <!-- Product Category Filter Header End -->
 
-                        <!-- Product item Boxes Start -->
-                        <div class="product-item-boxes" id="live-product-list">
-                            <p class="wow fadeInUp">Loading products…</p>
-                        </div>
-                        <!-- Product item Boxes End -->
+                            <div class="product-item-boxes" id="live-product-list">
+                                <p class="wow fadeInUp">Loading products…</p>
+                            </div>
 
-                        <!-- Live products from the Ellora admin panel (server/routes/public.js) -->
-                        <script>
-                            (function () {
-                                var API_BASE = 'http://localhost:4000/api/public';
-                                var container = document.getElementById('live-product-list');
+                            <script>
+                                (function () {
+                                    var API_BASE = 'http://localhost:4000/api/public';
+                                    var listEl = document.getElementById('live-product-list');
+                                    var sidebarEl = document.getElementById('live-filter-sidebar');
+                                    var headingEl = document.getElementById('products-heading');
+                                    var paginationEl = document.querySelector('.product-category-result-pagination');
+                                    var loadMoreLink = document.querySelector('.product-learn-more-btn a');
+                                    var sortEl = document.getElementById('sorting_list');
 
-                                // Read ?category=<slug> from the URL (set by the homepage category
-                                // circles / this page's own sidebar checkboxes) and pass it straight
-                                // through to the API so the list is actually filtered.
-                                var categorySlug = new URLSearchParams(window.location.search).get('category');
-                                var productsUrl = API_BASE + '/products' + (categorySlug ? '?category=' + encodeURIComponent(categorySlug) : '');
+                                    var PAGE_SIZE = 12;
 
-                                var headingEl = document.getElementById('products-heading');
-                                if (headingEl && categorySlug) {
-                                    var readableName = categorySlug.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-                                    headingEl.textContent = 'Showing results for ' + readableName;
-                                }
+                                    var SORT_MAP = {
+                                        'Low_to_High': 'price_asc',
+                                        'High_to_Low': 'price_desc'
+                                    };
 
-                                fetch(productsUrl)
-                                    .then(function (res) { return res.json(); })
-                                    .then(function (data) {
-                                        var products = data.products || [];
-                                        if (products.length === 0) {
-                                            container.innerHTML = categorySlug
-                                                ? '<p>No products found in this category.</p>'
-                                                : '<p>No products available right now.</p>';
-                                            return;
-                                        }
+                                    var initialParams = new URLSearchParams(window.location.search);
+                                    var state = {
+                                        category: initialParams.get('category') || null,
+                                        tags: (initialParams.get('tag') || '').split(',').filter(Boolean),
+                                        colors: [],
+                                        sizes: [],
+                                        sort: null,
+                                        offset: 0,
+                                    };
 
-                                        container.innerHTML = products.map(function (product) {
-                                            var price = Number(product.base_price).toFixed(2);
-                                            var compareAt = product.compare_at_price
-                                                ? '<span>$' + Number(product.compare_at_price).toFixed(2) + '</span>'
-                                                : '';
-                                            var detailUrl = 'product-single.html?slug=' + encodeURIComponent(product.slug);
-                                            // Use the admin-uploaded photo (product.image_url); fall back to the template placeholder.
-                                            var imgSrc = product.image_url || 'images/product-image-1.png';
+                                    var facets = null;
+                                    var openSections = {};
+                                    var total = 0;
+                                    var appending = false;
+
+                                    function readableLabel(str) {
+                                        return str.replace(/[-_]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+                                    }
+
+                                    function renderSidebar() {
+                                        if (!facets) return;
+
+                                        function section(title, items, stateKey, valueKey, labelKey) {
+                                            if (!items.length) return '';
+                                            var rows = items.map(function (item) {
+                                                var value = item[valueKey];
+                                                var id = (stateKey + '-' + value).replace(/[^a-zA-Z0-9_-]/g, '_');
+                                                var checked = state[stateKey].indexOf(value) !== -1 ? 'checked' : '';
+                                                var label = labelKey ? item[labelKey] : readableLabel(String(value));
+                                                return (
+                                                    '<li>' +
+                                                    '<input type="checkbox" id="' + id + '" data-filter="' + stateKey + '" data-value="' + value + '" ' + checked + '>' +
+                                                    '<label for="' + id + '">' + label + ' (' + item.count + ')</label>' +
+                                                    '</li>'
+                                                );
+                                            }).join('');
                                             return (
-                                                '<div class="product-item wow fadeInUp">' +
-                                                '  <div class="product-item-header">' +
-                                                '    <div class="product-item-image">' +
-                                                '      <a href="' + detailUrl + '">' +
-                                                '        <figure><img src="' + imgSrc + '" alt="' + product.name + '"></figure>' +
-                                                '      </a>' +
-                                                '    </div>' +
-                                                '  </div>' +
-                                                '  <div class="product-item-body">' +
-                                                '    <div class="product-item-content">' +
-                                                '      <h2 class="product-item-title"><a href="' + detailUrl + '">' + product.name + '</a></h2>' +
-                                                '    </div>' +
-                                                '    <div class="product-item-price"><h3>$' + price + ' ' + compareAt + '</h3></div>' +
-                                                '  </div>' +
+                                                '<div class="product-category-item wow fadeInUp' + (openSections[title] === false ? ' collapsed' : '') + '">' +
+                                                '<h2 class="product-category-item-title" data-toggle-section="' + title + '">' + title + '</h2>' +
+                                                '<ul>' + rows + '</ul>' +
                                                 '</div>'
                                             );
+                                        }
+
+                                        var categoryRows = facets.categories.map(function (c) {
+                                            var id = ('category-' + c.slug).replace(/[^a-zA-Z0-9_-]/g, '_');
+                                            var checked = state.category === c.slug ? 'checked' : '';
+                                            return (
+                                                '<li>' +
+                                                '<input type="checkbox" id="' + id + '" data-filter="category" data-value="' + c.slug + '" ' + checked + '>' +
+                                                '<label for="' + id + '">' + c.name + ' (' + c.count + ')</label>' +
+                                                '</li>'
+                                            );
                                         }).join('');
-                                    })
-                                    .catch(function (err) {
-                                        container.innerHTML = '<p>Could not load products (' + err.message + ').</p>';
-                                    });
+                                        var categorySection = facets.categories.length
+                                            ? '<div class="product-category-item wow fadeInUp' + (openSections['Categories'] === false ? ' collapsed' : '') + '"><h2 class="product-category-item-title" data-toggle-section="Categories">Categories</h2><ul>' + categoryRows + '</ul></div>'
+                                            : '';
 
-                                // Live announcement bar / footer copyright — same admin-managed site content
-                                // used across pages, see server/routes/public.js GET /site-content.
-                                fetch(API_BASE + '/site-content')
-                                    .then(function (res) { return res.json(); })
-                                    .then(function (data) {
-                                        var settings = data.settings || {};
+                                        var tagSection = section('Collection', facets.tags, 'tags', 'tag');
+                                        var colorSection = section('Color', facets.colors, 'colors', 'value');
+                                        var sizeSection = section('Size', facets.sizes, 'sizes', 'value');
 
-                                        // Render admin-managed banners (those that have an image) as a hero strip.
-                                        var banners = (data.banners || []).filter(function (b) { return b.image_url; });
-                                        var heroEl = document.getElementById('live-banner-hero');
-                                        if (heroEl && banners.length > 0) {
-                                            heroEl.innerHTML = banners.map(function (b) {
-                                                var caption =
-                                                    '<div class="live-banner-caption">' +
-                                                    '  <h2>' + (b.title || '') + '</h2>' +
-                                                    (b.subtitle ? '<p>' + b.subtitle + '</p>' : '') +
+                                        sidebarEl.innerHTML = categorySection + tagSection + colorSection + sizeSection;
+
+                                        sidebarEl.querySelectorAll('input[type="checkbox"]').forEach(function (box) {
+                                            box.addEventListener('change', function () {
+                                                var key = box.getAttribute('data-filter');
+                                                var value = box.getAttribute('data-value');
+                                                if (key === 'category') {
+                                                    state.category = box.checked ? value : null;
+                                                    sidebarEl.querySelectorAll('input[data-filter="category"]').forEach(function (other) {
+                                                        if (other !== box) other.checked = false;
+                                                    });
+                                                } else {
+                                                    var arr = state[key];
+                                                    var idx = arr.indexOf(value);
+                                                    if (box.checked && idx === -1) arr.push(value);
+                                                    if (!box.checked && idx !== -1) arr.splice(idx, 1);
+                                                }
+                                                state.offset = 0;
+                                                syncUrl();
+                                                loadProducts(false);
+                                            });
+                                        });
+
+                                        sidebarEl.querySelectorAll('.product-category-item-title').forEach(function (titleEl) {
+                                            titleEl.addEventListener('click', function () {
+                                                var key = titleEl.getAttribute('data-toggle-section');
+                                                var itemEl = titleEl.closest('.product-category-item');
+                                                var isCollapsed = itemEl.classList.toggle('collapsed');
+                                                openSections[key] = !isCollapsed;
+                                            });
+                                        });
+                                    }
+
+                                    function syncUrl() {
+                                        var params = new URLSearchParams();
+                                        if (state.category) params.set('category', state.category);
+                                        if (state.tags.length) params.set('tag', state.tags.join(','));
+                                        if (state.colors.length) params.set('color', state.colors.join(','));
+                                        if (state.sizes.length) params.set('size', state.sizes.join(','));
+                                        var qs = params.toString();
+                                        var newUrl = window.location.pathname + (qs ? '?' + qs : '');
+                                        window.history.replaceState(null, '', newUrl);
+                                    }
+
+                                    function activeFilterLabel() {
+                                        var parts = [];
+                                        if (state.category) parts.push(readableLabel(state.category));
+                                        state.tags.forEach(function (t) { parts.push(readableLabel(t)); });
+                                        state.colors.forEach(function (c) { parts.push(c); });
+                                        state.sizes.forEach(function (s) { parts.push(s); });
+                                        return parts.join(', ');
+                                    }
+
+                                    function productCard(product) {
+                                        var price = '\u20B9' + Number(product.base_price).toLocaleString('en-IN');
+                                        var compareAt = product.compare_at_price
+                                            ? '<span>\u20B9' + Number(product.compare_at_price).toLocaleString('en-IN') + '</span>'
+                                            : '';
+                                        var detailUrl = 'product-single.html?slug=' + encodeURIComponent(product.slug);
+                                        var imgSrc = product.image_url || 'images/product-image-1.png';
+                                        return (
+                                            '<div class="product-item wow fadeInUp">' +
+                                            '  <div class="product-item-header">' +
+                                            '    <div class="product-item-image">' +
+                                            '      <a href="' + detailUrl + '">' +
+                                            '        <figure><img src="' + imgSrc + '" alt="' + product.name + '"></figure>' +
+                                            '      </a>' +
+                                            '    </div>' +
+                                            '  </div>' +
+                                            '  <div class="product-item-body">' +
+                                            '    <div class="product-item-content">' +
+                                            '      <h2 class="product-item-title"><a href="' + detailUrl + '">' + product.name + '</a></h2>' +
+                                            '    </div>' +
+                                            '    <div class="product-item-price"><h3>' + price + ' ' + compareAt + '</h3></div>' +
+                                            '  </div>' +
+                                            '</div>'
+                                        );
+                                    }
+
+                                    function loadProducts(append) {
+                                        appending = append;
+                                        var params = new URLSearchParams();
+                                        if (state.category) params.set('category', state.category);
+                                        if (state.tags.length) params.set('tag', state.tags.join(','));
+                                        if (state.colors.length) params.set('color', state.colors.join(','));
+                                        if (state.sizes.length) params.set('size', state.sizes.join(','));
+                                        if (state.sort) params.set('sort', state.sort);
+                                        params.set('limit', PAGE_SIZE);
+                                        params.set('offset', state.offset);
+
+                                        if (!append) listEl.innerHTML = '<p class="wow fadeInUp">Loading products…</p>';
+
+                                        fetch(API_BASE + '/products?' + params.toString())
+                                            .then(function (res) { return res.json(); })
+                                            .then(function (data) {
+                                                var products = data.products || [];
+                                                total = data.total || 0;
+
+                                                var hasFilters = state.category || state.tags.length || state.colors.length || state.sizes.length;
+                                                if (headingEl) {
+                                                    headingEl.textContent = hasFilters
+                                                        ? 'Showing results for ' + activeFilterLabel()
+                                                        : 'Showing all results';
+                                                }
+
+                                                if (products.length === 0 && !append) {
+                                                    listEl.innerHTML = hasFilters
+                                                        ? '<p>No products found for these filters.</p>'
+                                                        : '<p>No products available right now.</p>';
+                                                } else {
+                                                    var html = products.map(productCard).join('');
+                                                    listEl.innerHTML = append ? listEl.innerHTML + html : html;
+                                                }
+
+                                                var shown = append ? state.offset + products.length : products.length;
+                                                if (paginationEl) {
+                                                    paginationEl.innerHTML = total ? '<span>' + shown + ' of ' + total + ' products</span>' : '';
+                                                }
+                                                if (loadMoreLink) {
+                                                    loadMoreLink.style.display = shown < total ? '' : 'none';
+                                                }
+                                            })
+                                            .catch(function (err) {
+                                                listEl.innerHTML = '<p>Could not load products (' + err.message + ').</p>';
+                                            });
+                                    }
+
+                                    var clearAllLink = document.querySelector('.product-category-filter-clear-btn a');
+                                    if (clearAllLink) {
+                                        clearAllLink.addEventListener('click', function (e) {
+                                            e.preventDefault();
+                                            state = { category: null, tags: [], colors: [], sizes: [], sort: null, offset: 0 };
+                                            if (sortEl) sortEl.value = '';
+                                            syncUrl();
+                                            renderSidebar();
+                                            loadProducts(false);
+                                        });
+                                    }
+
+                                    if (loadMoreLink) {
+                                        loadMoreLink.addEventListener('click', function (e) {
+                                            e.preventDefault();
+                                            state.offset += PAGE_SIZE;
+                                            loadProducts(true);
+                                        });
+                                    }
+
+                                    if (sortEl) {
+                                        sortEl.addEventListener('change', function () {
+                                            state.sort = SORT_MAP[sortEl.value] || null;
+                                            state.offset = 0;
+                                            loadProducts(false);
+                                        });
+                                    }
+
+                                    fetch(API_BASE + '/facets')
+                                        .then(function (res) { return res.json(); })
+                                        .then(function (data) {
+                                            facets = data;
+                                            renderSidebar();
+                                        })
+                                        .catch(function () {
+                                            sidebarEl.innerHTML = '<p>Could not load filters.</p>';
+                                        });
+
+                                    loadProducts(false);
+
+                                    // Banners + site settings
+                                    fetch(API_BASE + '/site-content')
+                                        .then(function (res) { return res.json(); })
+                                        .then(function (data) {
+                                            var settings = data.settings || {};
+
+                                            // Compact banner cards (like homepage Best Offers)
+                                            var banners = (data.banners || []).filter(function (b) { return b.image_url; });
+                                            var heroEl = document.getElementById('live-banner-hero');
+                                            if (heroEl && banners.length > 0) {
+                                                heroEl.innerHTML = banners.map(function (b) {
+                                                    var content =
+                                                        '<div class="live-banner-content">' +
+                                                        (b.badge_text ? '<span class="live-banner-badge">' + b.badge_text + '</span>' : '') +
+                                                        '<h2>' + (b.title || '') + '</h2>' +
+                                                        (b.subtitle ? '<p>' + b.subtitle + '</p>' : '') +
+                                                        '<span class="live-banner-btn">Get Offer <span>\u2192</span></span>' +
+                                                        '</div>';
+                                                    var inner =
+                                                        '<figure><img src="' + b.image_url + '" alt="' + (b.title || '') + '"></figure>' + content;
+                                                    return b.link_url
+                                                        ? '<a class="live-banner" href="' + b.link_url + '">' + inner + '</a>'
+                                                        : '<div class="live-banner">' + inner + '</div>';
+                                                }).join('');
+                                            }
+
+                                            if (settings.announcement_text) {
+                                                document.getElementById('live-announcement').innerHTML =
+                                                    '<i class="fa-regular fa-clock"></i> ' + settings.announcement_text;
+                                            }
+                                            if (settings.footer_copyright_text) {
+                                                document.getElementById('live-footer-copyright').textContent = settings.footer_copyright_text;
+                                            }
+                                            if (settings.maintenance_mode) {
+                                                document.body.innerHTML =
+                                                    '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem;font-family:sans-serif;">' +
+                                                    '  <div><h1>We will be back soon</h1><p>The store is temporarily down for maintenance. Please check back shortly.</p></div>' +
                                                     '</div>';
-                                                var inner =
-                                                    '<figure><img src="' + b.image_url + '" alt="' + (b.title || '') + '"></figure>' + caption;
-                                                return b.link_url
-                                                    ? '<a class="live-banner" href="' + b.link_url + '">' + inner + '</a>'
-                                                    : '<div class="live-banner">' + inner + '</div>';
-                                            }).join('');
-                                        }
+                                            }
+                                        })
+                                        .catch(function () { });
+                                })();
+                            </script>
 
-                                        if (settings.announcement_text) {
-                                            document.getElementById('live-announcement').innerHTML =
-                                                '<i class="fa-regular fa-clock"></i> ' + settings.announcement_text;
-                                        }
-                                        if (settings.footer_copyright_text) {
-                                            document.getElementById('live-footer-copyright').textContent = settings.footer_copyright_text;
-                                        }
-                                        if (settings.maintenance_mode) {
-                                            document.body.innerHTML =
-                                                '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem;font-family:sans-serif;">' +
-                                                '  <div><h1>We will be back soon</h1><p>The store is temporarily down for maintenance. Please check back shortly.</p></div>' +
-                                                '</div>';
-                                        }
-                                    })
-                                    .catch(function () { /* fall back to static template text */ });
-                            })();
-                        </script>
-
-                        <!-- Product Leader More Button Start -->
-                        <div class="product-learn-more-btn wow fadeInUp" data-wow-delay="0.2s">
-                            <a href="#" class="btn-default">Load More</a>
+                            <div class="product-learn-more-btn wow fadeInUp" data-wow-delay="0.2s">
+                                <a href="#" class="btn-default">Load More</a>
+                            </div>
                         </div>
-                        <!-- Product Leader More Button End -->
                     </div>
-                    <!-- Product item List Box End -->
                 </div>
             </div>
         </div>
-    </div>
-    <!-- Page Products Section End -->
+        <!-- Page Products Section End -->
 
-    <!-- Main Footer Start -->
-    <footer class="main-footer dark-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-xl-12">
-                    <!-- Footer Links Box Start -->
-                    <div class="footer-links-box">
-                        <!-- Footer Links Start -->
-                        <div class="footer-links">
-                            <h2>Quick Links</h2>
-                            <ul>
-                                <li><a href="index.html">Home</a></li>
-                                <li><a href="about.html">About us</a></li>
-                                <li><a href="products.html">Our Collection</a></li>
-                                <li><a href="blog.html">Blog</a></li>
-                            </ul>
+        <!-- Main Footer Start -->
+        <footer class="main-footer dark-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="footer-links-box">
+                            <div class="footer-links">
+                                <h2>Quick Links</h2>
+                                <ul>
+                                    <li><a href="index.html">Home</a></li>
+                                    <li><a href="about.html">About us</a></li>
+                                    <li><a href="products.html">Our Collection</a></li>
+                                    <li><a href="blog.html">Blog</a></li>
+                                </ul>
+                            </div>
+                            <div class="footer-links">
+                                <h2>Customer Services</h2>
+                                <ul>
+                                    <li><a href="account-dashboard.html">My Account</a></li>
+                                    <li><a href="refund-return.html">Refund & Return</a></li>
+                                    <li><a href="account-wishlist.html">Wishlist</a></li>
+                                    <li><a href="term-condition.html">Terms & Conditions</a></li>
+                                </ul>
+                            </div>
+                            <div class="footer-links">
+                                <h2>Shop Categories</h2>
+                                <ul>
+                                    <li><a href="products.html">Men's Fashion</a></li>
+                                    <li><a href="products.html">Women's Fashion</a></li>
+                                    <li><a href="products.html">Accessories</a></li>
+                                    <li><a href="products.html">Footwear</a></li>
+                                </ul>
+                            </div>
+                            <div class="footer-links footer-newsletter-box">
+                                <h2>Newsletter Signup</h2>
+                                <p>Stay Updated With Latest Fashion Trends</p>
+                                <form id="newslettersForm" class="footer-newsletter-form" action="#" method="POST">
+                                    <div class="form-group">
+                                        <input type="email" name="mail" class="form-control" id="mail"
+                                            placeholder="Enter Your E-mail *" required="">
+                                        <button type="submit" class="newsletter-btn"><i
+                                                class="fa-regular fa-paper-plane"></i></button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                        <!-- Footer Links End -->
-
-                        <!-- Footer Links Start -->
-                        <div class="footer-links">
-                            <h2>Customer Services</h2>
-                            <ul>
-                                <li><a href="account-dashboard.html">My Account</a></li>
-                                <li><a href="refund-return.html">Refund & Return</a></li>
-                                <li><a href="account-wishlist.html">Wishlist</a></li>
-                                <li><a href="term-condition.html">Terms & Conditions</a></li>
-                            </ul>
-                        </div>
-                        <!-- Footer Links End -->
-
-                        <!-- Footer Links Start -->
-                        <div class="footer-links">
-                            <h2>Shop Categories</h2>
-                            <ul>
-                                <li><a href="products.html">Men's Fashion</a></li>
-                                <li><a href="products.html">Women's Fashion</a></li>
-                                <li><a href="products.html">Accessories</a></li>
-                                <li><a href="products.html">Footwear</a></li>
-                            </ul>
-                        </div>
-                        <!-- Footer Links End -->
-
-                        <!-- Footer Newsletter Box Start -->
-                        <div class="footer-links footer-newsletter-box">
-                            <h2>Newsletter Signup</h2>
-                            <p>Stay Updated With Latest Fashion Trends</p>
-                            <form id="newslettersForm" class="footer-newsletter-form" action="#" method="POST">
-                                <div class="form-group">
-                                    <input type="email" name="mail" class="form-control" id="mail"
-                                        placeholder="Enter Your E-mail *" required="">
-                                    <button type="submit" class="newsletter-btn"><i
-                                            class="fa-regular fa-paper-plane"></i></button>
-                                </div>
-                            </form>
-                        </div>
-                        <!-- Footer Newsletter Box End -->
                     </div>
-                    <!-- Footer Links Box End -->
-                </div>
 
-                <div class="col-lg-12">
-                    <!-- Footer CTA Box Start -->
-                    <div class="footer-cta-box">
-                        <!-- Footer Logo Start -->
-                        <div class="footer-logo">
-                            <img src="images/logo-white.svg" alt="">
+                    <div class="col-lg-12">
+                        <div class="footer-cta-box">
+                            <div class="footer-logo">
+                                <img src="images/logo-white.svg" alt="">
+                            </div>
+                            <div class="footer-payment-options">
+                                <ul>
+                                    <li><a href="#"><img src="images/icon-payment-options-1.svg" alt=""></a></li>
+                                    <li><a href="#"><img src="images/icon-payment-options-2.svg" alt=""></a></li>
+                                    <li><a href="#"><img src="images/icon-payment-options-3.svg" alt=""></a></li>
+                                    <li><a href="#"><img src="images/icon-payment-options-4.svg" alt=""></a></li>
+                                    <li><a href="#"><img src="images/icon-payment-options-5.svg" alt=""></a></li>
+                                    <li><a href="#"><img src="images/icon-payment-options-6.svg" alt=""></a></li>
+                                </ul>
+                            </div>
                         </div>
-                        <!-- Footer Logo End -->
-
-                        <!-- Footer Payment Options Start -->
-                        <div class="footer-payment-options">
-                            <ul>
-                                <li><a href="#"><img src="images/icon-payment-options-1.svg" alt=""></a></li>
-                                <li><a href="#"><img src="images/icon-payment-options-2.svg" alt=""></a></li>
-                                <li><a href="#"><img src="images/icon-payment-options-3.svg" alt=""></a></li>
-                                <li><a href="#"><img src="images/icon-payment-options-4.svg" alt=""></a></li>
-                                <li><a href="#"><img src="images/icon-payment-options-5.svg" alt=""></a></li>
-                                <li><a href="#"><img src="images/icon-payment-options-6.svg" alt=""></a></li>
-                            </ul>
-                        </div>
-                        <!-- Footer Payment Options End -->
                     </div>
-                    <!-- Footer CTA Box End -->
-                </div>
 
-                <div class="col-lg-12">
-                    <!-- Footer Copyright Start -->
-                    <div class="footer-copyright">
-                        <!-- Footer Copyright Text Start -->
-                        <div class="footer-copyright-text">
-                            <p id="live-footer-copyright">Copyright © 2026 All Rights Reserved.</p>
+                    <div class="col-lg-12">
+                        <div class="footer-copyright">
+                            <div class="footer-copyright-text">
+                                <p id="live-footer-copyright">Copyright © 2026 All Rights Reserved.</p>
+                            </div>
+                            <div class="footer-social-links">
+                                <ul>
+                                    <li><a href="#"><i class="fa-brands fa-pinterest-p"></i></a></li>
+                                    <li><a href="#"><i class="fa-brands fa-x-twitter"></i></a></li>
+                                    <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
+                                    <li><a href="#"><i class="fa-brands fa-instagram"></i></a></li>
+                                </ul>
+                            </div>
                         </div>
-                        <!-- Footer Copyright Text End -->
-
-                        <!-- Footer Social Links Start -->
-                        <div class="footer-social-links">
-                            <ul>
-                                <li><a href="#"><i class="fa-brands fa-pinterest-p"></i></a></li>
-                                <li><a href="#"><i class="fa-brands fa-x-twitter"></i></a></li>
-                                <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
-                                <li><a href="#"><i class="fa-brands fa-instagram"></i></a></li>
-                            </ul>
-                        </div>
-                        <!-- Footer Social Links End -->
                     </div>
-                    <!-- Footer Copyright End -->
                 </div>
             </div>
-        </div>
-    </footer>
-    <!-- Main Footer End -->
+        </footer>
+        <!-- Main Footer End -->
 
-    <!-- Jquery Library File -->
-    <script src="js/jquery-3.7.1.min.js"></script>
-    <!-- Bootstrap js file -->
-    <script src="js/bootstrap.min.js"></script>
-    <!-- Validator js file -->
-    <script src="js/validator.min.js"></script>
-    <!-- SlickNav js file -->
-    <script src="js/jquery.slicknav.js"></script>
-    <!-- Swiper js file -->
-    <script src="js/swiper-bundle.min.js"></script>
-    <!-- Counter js file -->
-    <script src="js/jquery.waypoints.min.js"></script>
-    <script src="js/jquery.counterup.min.js"></script>
-    <!-- Magnific js file -->
-    <script src="js/jquery.magnific-popup.min.js"></script>
-    <!-- SmoothScroll -->
-    <script src="js/SmoothScroll.js"></script>
-    <!-- Isotop js file -->
-    <script src="js/isotope.min.js"></script>
-    <!-- Parallax js -->
-    <script src="js/parallaxie.js"></script>
-    <!-- MagicCursor js file -->
-    <script src="js/gsap.min.js"></script>
-    <script src="js/magiccursor.js"></script>
-    <!-- Text Effect js file -->
-    <script src="js/SplitText.min.js"></script>
-    <script src="js/ScrollTrigger.min.js"></script>
-    <!-- YTPlayer js File -->
-    <script src="js/jquery.mb.YTPlayer.min.js"></script>
-    <!-- Wow js file -->
-    <script src="js/wow.min.js"></script>
-    <!-- Main Custom js file -->
-    <script src="js/function.js"></script>
-    <script src="js/products-hero-dynamic.js"></script>
+        <script src="js/jquery-3.7.1.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/validator.min.js"></script>
+        <script src="js/jquery.slicknav.js"></script>
+        <script src="js/swiper-bundle.min.js"></script>
+        <script src="js/jquery.waypoints.min.js"></script>
+        <script src="js/jquery.counterup.min.js"></script>
+        <script src="js/jquery.magnific-popup.min.js"></script>
+        <script src="js/SmoothScroll.js"></script>
+        <script src="js/isotope.min.js"></script>
+        <script src="js/parallaxie.js"></script>
+        <script src="js/gsap.min.js"></script>
+        <script src="js/magiccursor.js"></script>
+        <script src="js/SplitText.min.js"></script>
+        <script src="js/ScrollTrigger.min.js"></script>
+        <script src="js/jquery.mb.YTPlayer.min.js"></script>
+        <script src="js/wow.min.js"></script>
+        <script src="js/function.js"></script>
+        <script src="js/products-hero-dynamic.js"></script>
+        <script src="js/mega-menu-dynamic.js"></script>
 </body>
 
 </html>

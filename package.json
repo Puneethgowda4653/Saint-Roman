@@ -9,12 +9,18 @@
     "dev:server": "npm run dev --prefix server",
     "dev:admin": "npm run dev --prefix admin",
     "dev:full": "concurrently -n storefront,server,admin -c blue,green,magenta \"npm run dev\" \"npm run dev:server\" \"npm run dev:admin\"",
-    "install:all": "npm install && npm install --prefix server && npm install --prefix admin"
+    "install:all": "npm install && npm install --prefix server && npm install --prefix admin",
+    "build:html": "node scripts/build-html.js",
+    "serve:dist": "browser-sync start --server dist --files \"dist/**/*\"",
+    "prod:full": "npm run build:html && concurrently -n storefront,server,admin -c blue,green,magenta \"npm run serve:dist\" \"npm run dev:server\" \"npm run dev:admin\""
   },
   "devDependencies": {
     "browser-sync": "^3.0.3",
     "concurrently": "^9.1.0",
     "docx": "^9.7.1",
-    "mammoth": "^1.12.0"
+    "mammoth": "^1.12.0",
+    "html-minifier-terser": "^7.2.0",
+    "terser": "^5.31.0",
+    "fast-glob": "^3.3.2"
   }
 }

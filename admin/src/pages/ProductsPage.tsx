@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Search, X, Plus, Barcode as BarcodeIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -27,11 +27,16 @@ import { toast } from 'sonner'
 import { ImageUpload } from '@/components/shared/ImageUpload'
 import { BarcodeSvg } from '@/components/shared/BarcodeSvg'
 import { printBarcodeLabels } from '@/lib/barcodePrint'
-import { Barcode as BarcodeIcon } from 'lucide-react'
 
 interface Category {
   id: string
   name: string
+}
+
+interface Tag {
+  id: string
+  name: string
+  slug: string
 }
 
 interface Variant {
@@ -57,6 +62,7 @@ interface Product {
   status: 'draft' | 'active' | 'archived'
   category: Category | null
   product_variants: Variant[]
+  tags: string[]
 }
 
 function slugify(value: string) {
@@ -72,6 +78,7 @@ const emptyVariant: Variant = { size: '', color: '', price: 0, stock_quantity: 0
 export function ProductsPage() {
   const { data, loading, error, refetch } = useApiResource<{ products: Product[] }>('/products')
   const { data: categoriesData } = useApiResource<{ categories: Category[] }>('/categories')
+  const { data: tagsData, refetch: refetchTags } = useApiResource<{ tags: Tag[] }>('/tags')
 
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -88,10 +95,12 @@ export function ProductsPage() {
   const [status, setStatus] = useState<Product['status']>('draft')
   const [categoryId, setCategoryId] = useState<string>('')
   const [variants, setVariants] = useState<Variant[]>([{ ...emptyVariant }])
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [newTagName, setNewTagName] = useState('')
+  const [addingTag, setAddingTag] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  // Table controls: search, filters, sort, bulk selection. All client-side — the full product
-  // list is already fetched, this just slices/reorders/tags what's shown.
+  // Table controls
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -127,6 +136,8 @@ export function ProductsPage() {
     setStatus('draft')
     setCategoryId('')
     setVariants([{ ...emptyVariant }])
+    setSelectedTags([])
+    setNewTagName('')
   }
 
   function updateVariant(index: number, patch: Partial<Variant>) {
@@ -238,6 +249,7 @@ export function ProductsPage() {
         }))
         : [{ ...emptyVariant }],
     )
+    setSelectedTags(product.tags || [])
     setOpen(true)
   }
 
@@ -258,6 +270,7 @@ export function ProductsPage() {
         base_price: Number(basePrice) || 0,
         status,
         category_id: categoryId || null,
+        tags: selectedTags,
         variants: variants.filter((v) => v.size || v.color),
       }
 
@@ -288,6 +301,41 @@ export function ProductsPage() {
       toast.error(err instanceof Error ? err.message : 'Failed to delete product')
     }
   }
+
+  // ── Tag helpers ──────────────────────────────────────────────────────
+  function addTag(slug: string) {
+    if (!selectedTags.includes(slug)) {
+      setSelectedTags((prev) => [...prev, slug])
+    }
+  }
+
+  function removeTag(slug: string) {
+    setSelectedTags((prev) => prev.filter((t) => t !== slug))
+  }
+
+  async function handleCreateTag() {
+    if (!newTagName.trim()) return
+    setAddingTag(true)
+    try {
+      const res = await apiFetch('/tags', { method: 'POST', body: JSON.stringify({ name: newTagName.trim() }) })
+      const created = res.tag
+      toast.success(`Tag "${created.name}" created`)
+      setNewTagName('')
+      refetchTags()
+      addTag(created.slug)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create tag')
+    } finally {
+      setAddingTag(false)
+    }
+  }
+
+  function getTagName(slug: string) {
+    const tag = tagsData?.tags.find((t) => t.slug === slug)
+    return tag ? tag.name : slug
+  }
+
+  const availableTags = (tagsData?.tags || []).filter((t) => !selectedTags.includes(t.slug))
 
   const statusVariant: Record<Product['status'], 'default' | 'secondary' | 'outline'> = {
     active: 'default',
@@ -430,6 +478,79 @@ export function ProductsPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
+              </div>
+
+              {/* ── Tags section ── */}
+              <div className="flex flex-col gap-2">
+                <Label>Tags (collections)</Label>
+
+                {selectedTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedTags.map((slug) => (
+                      <Badge key={slug} variant="secondary" className="gap-1 pl-2 pr-1 py-1">
+                        {getTagName(slug)}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(slug)}
+                          className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Select
+                    value=""
+                    onValueChange={(value) => {
+                      if (value) addTag(value)
+                    }}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select a tag to add" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTags.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          {tagsData?.tags.length === 0 ? 'No tags yet — create one below' : 'All tags selected'}
+                        </div>
+                      ) : (
+                        availableTags.map((t) => (
+                          <SelectItem key={t.id} value={t.slug}>
+                            {t.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-2">
+                  <Input
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                    placeholder="New tag name..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleCreateTag()
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCreateTag}
+                    disabled={addingTag || !newTagName.trim()}
+                    className="shrink-0"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add tag
+                  </Button>
+                </div>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -595,6 +716,7 @@ export function ProductsPage() {
                 </TableHead>
                 <TableHead>Product</TableHead>
                 <TableHead>Category</TableHead>
+                <TableHead>Tags</TableHead>
                 <TableHead>
                   <button type="button" className="flex items-center gap-1" onClick={toggleSort}>
                     Price
@@ -611,7 +733,7 @@ export function ProductsPage() {
                 </TableHead>
                 <TableHead>Stock</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="w-24" />
+                <TableHead className="w-28" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -642,6 +764,18 @@ export function ProductsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{product.category?.name ?? '—'}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {(product.tags || []).map((slug) => (
+                          <Badge key={slug} variant="outline" className="text-xs">
+                            {getTagName(slug)}
+                          </Badge>
+                        ))}
+                        {(!product.tags || product.tags.length === 0) && (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{product.base_price}</TableCell>
                     <TableCell>
                       {level === 'out' && <Badge variant="destructive">Out of stock</Badge>}
@@ -685,7 +819,7 @@ export function ProductsPage() {
               })}
               {visibleProducts.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground">
                     {data.products.length === 0 ? 'No products yet.' : 'No products match your filters.'}
                   </TableCell>
                 </TableRow>

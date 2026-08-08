@@ -16,12 +16,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useApiResource } from '@/hooks/useSupabase'
 import { apiFetch } from '@/lib/api'
 import { toast } from 'sonner'
+import { ImageUpload } from '@/components/shared/ImageUpload'
 
 interface Category {
   id: string
   name: string
   slug: string
   description: string | null
+  image_url: string | null
   is_active: boolean
 }
 
@@ -39,12 +41,14 @@ export function CategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
   const [saving, setSaving] = useState(false)
 
   function resetForm() {
     setEditingId(null)
     setName('')
     setDescription('')
+    setImageUrl('')
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -56,6 +60,7 @@ export function CategoriesPage() {
     setEditingId(category.id)
     setName(category.name)
     setDescription(category.description ?? '')
+    setImageUrl(category.image_url ?? '')
     setOpen(true)
   }
 
@@ -63,7 +68,7 @@ export function CategoriesPage() {
     e.preventDefault()
     setSaving(true)
     try {
-      const body = { name, slug: slugify(name), description }
+      const body = { name, slug: slugify(name), description, image_url: imageUrl || null }
       if (editingId) {
         await apiFetch(`/categories/${editingId}`, { method: 'PUT', body: JSON.stringify(body) })
         toast.success('Category updated')
@@ -115,6 +120,10 @@ export function CategoriesPage() {
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
+              <div className="flex flex-col gap-2">
+                <Label>Category Image</Label>
+                <ImageUpload value={imageUrl} onChange={setImageUrl} folder="ellora/categories" />
+              </div>
               <DialogFooter>
                 <Button type="submit" disabled={saving}>
                   {saving ? 'Saving…' : editingId ? 'Save changes' : 'Create'}
@@ -136,6 +145,7 @@ export function CategoriesPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-16">Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Slug</TableHead>
               <TableHead>Status</TableHead>
@@ -145,6 +155,17 @@ export function CategoriesPage() {
           <TableBody>
             {data.categories.map((category) => (
               <TableRow key={category.id}>
+                <TableCell>
+                  {category.image_url ? (
+                    <img
+                      src={category.image_url}
+                      alt=""
+                      className="h-10 w-10 rounded-full border object-cover"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full border bg-muted" />
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{category.name}</TableCell>
                 <TableCell className="text-muted-foreground">{category.slug}</TableCell>
                 <TableCell>
@@ -164,7 +185,7 @@ export function CategoriesPage() {
             ))}
             {data.categories.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   No categories yet.
                 </TableCell>
               </TableRow>

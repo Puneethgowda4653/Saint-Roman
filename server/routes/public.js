@@ -8,33 +8,139 @@ const router = Router();
 // server which requires an admin JWT. Only exposes fields safe for a shopper to see, and only
 // active/published rows (no drafts, no cost price, no internal fields like HSN/barcode).
 
+const SORT_OPTIONS = {
+  price_asc: { column: 'base_price', ascending: true },
+  price_desc: { column: 'base_price', ascending: false },
+  newest: { column: 'created_at', ascending: false },
+};
+
+// GET /api/public/products — supports combinable filters (Myntra/Flipkart-style facets):
+//   ?category=<slug>            single category
+//   ?tag=summer,new-arrival     comma-separated, OR-matched against products.tags
+//   ?color=Black,Blue           comma-separated, OR-matched against variant color
+//   ?size=M,L                   comma-separated, OR-matched against variant size
+//   ?price_min=&price_max=      on base_price
+//   ?sort=price_asc|price_desc|newest
+//   ?limit=&offset=             pagination (limit capped at 48)
+// All provided filters are combined with AND; multiple values within one filter are OR'd.
 router.get('/products', async (req, res) => {
+  const { category, tag, color, size, price_min, price_max, sort, limit, offset } = req.query;
+
+  const needsVariantJoin = Boolean(color || size);
+  // PostgREST embeds `product_variants` as a nested array per product (not a flattened join),
+  // so adding `!inner` here to enable filtering does not duplicate top-level product rows —
+  // it just restricts both which products match and which variants show up in the array.
+  const variantEmbed = `product_variants${needsVariantJoin ? '!inner' : ''}(id, size, color, price, stock_quantity)`;
+
   let query = supabaseAdmin
     .from('products')
-    .select('id, name, slug, description, image_url, base_price, compare_at_price, category:categories(id, name, slug), product_variants(id, size, color, price, stock_quantity)')
-    .eq('status', 'active')
-    .order('created_at', { ascending: false });
+    .select(
+      `id, name, slug, description, image_url, base_price, compare_at_price, tags, category:categories(id, name, slug), ${variantEmbed}`,
+      { count: 'exact' }
+    )
+    .eq('status', 'active');
 
   // Optional ?category=<slug> — resolve the slug to an id first, since Supabase can't filter
   // on a joined table's column directly without an !inner join.
-  const categorySlug = req.query.category;
-  if (categorySlug) {
-    const { data: category, error: categoryError } = await supabaseAdmin
+  if (category) {
+    const { data: categoryRow, error: categoryError } = await supabaseAdmin
       .from('categories')
       .select('id')
-      .eq('slug', categorySlug)
+      .eq('slug', category)
       .maybeSingle();
 
     if (categoryError) return res.status(500).json({ error: categoryError.message });
-    if (!category) return res.json({ products: [] }); // unknown slug — no matches, not an error
+    if (!categoryRow) return res.json({ products: [], total: 0 }); // unknown slug — no matches, not an error
 
-    query = query.eq('category_id', category.id);
+    query = query.eq('category_id', categoryRow.id);
   }
 
-  const { data, error } = await query;
+  // ?tag=summer or ?tag=summer,new-arrival — matches products whose tags array
+  // overlaps any of the given tags.
+  if (tag) {
+    const tags = String(tag).split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
+    if (tags.length) query = query.overlaps('tags', tags);
+  }
+
+  if (color) {
+    const colors = String(color).split(',').map((c) => c.trim()).filter(Boolean);
+    if (colors.length) query = query.in('product_variants.color', colors);
+  }
+
+  if (size) {
+    const sizes = String(size).split(',').map((s) => s.trim()).filter(Boolean);
+    if (sizes.length) query = query.in('product_variants.size', sizes);
+  }
+
+  if (price_min) query = query.gte('base_price', Number(price_min));
+  if (price_max) query = query.lte('base_price', Number(price_max));
+
+  const sortOpt = SORT_OPTIONS[sort] || SORT_OPTIONS.newest;
+  query = query.order(sortOpt.column, { ascending: sortOpt.ascending });
+
+  const pageLimit = Math.min(Number(limit) || 12, 48);
+  const pageOffset = Math.max(Number(offset) || 0, 0);
+  query = query.range(pageOffset, pageOffset + pageLimit - 1);
+
+  const { data, error, count } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ products: data, total: count ?? data.length, limit: pageLimit, offset: pageOffset });
+});
+
+// GET /api/public/facets — real filter-sidebar data (categories/tags/colors/sizes with live
+// counts + the active price range), computed from products that are actually active right now.
+// Replaces the old hardcoded "Women's Fashion (520)" template checkboxes.
+router.get('/facets', async (req, res) => {
+  const { data: products, error } = await supabaseAdmin
+    .from('products')
+    .select('base_price, tags, category:categories(name, slug), product_variants(color, size)')
+    .eq('status', 'active');
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json({ products: data });
+
+  const categoryCounts = new Map();
+  const tagCounts = new Map();
+  const colorCounts = new Map();
+  const sizeCounts = new Map();
+  let minPrice = null;
+  let maxPrice = null;
+
+  for (const p of products) {
+    if (p.category) {
+      const entry = categoryCounts.get(p.category.slug) || { name: p.category.name, count: 0 };
+      entry.count += 1;
+      categoryCounts.set(p.category.slug, entry);
+    }
+    for (const t of p.tags || []) {
+      tagCounts.set(t, (tagCounts.get(t) || 0) + 1);
+    }
+    for (const v of p.product_variants || []) {
+      if (v.color) colorCounts.set(v.color, (colorCounts.get(v.color) || 0) + 1);
+      if (v.size) sizeCounts.set(v.size, (sizeCounts.get(v.size) || 0) + 1);
+    }
+    const price = Number(p.base_price);
+    if (!Number.isNaN(price)) {
+      minPrice = minPrice === null ? price : Math.min(minPrice, price);
+      maxPrice = maxPrice === null ? price : Math.max(maxPrice, price);
+    }
+  }
+
+  res.json({
+    categories: Array.from(categoryCounts.entries())
+      .map(([slug, v]) => ({ slug, name: v.name, count: v.count }))
+      .sort((a, b) => b.count - a.count),
+    tags: Array.from(tagCounts.entries())
+      .map(([t, count]) => ({ tag: t, count }))
+      .sort((a, b) => b.count - a.count),
+    colors: Array.from(colorCounts.entries())
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => b.count - a.count),
+    sizes: Array.from(sizeCounts.entries())
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => b.count - a.count),
+    price_range: { min: minPrice ?? 0, max: maxPrice ?? 0 },
+  });
 });
 
 router.get('/products/:slug', async (req, res) => {
@@ -69,6 +175,29 @@ router.get('/faqs', async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   res.json({ faqs: data });
+});
+
+// Public tags list — kept for backward compatibility, now derived from real product tags
+// instead of a `tags` table that was never created (the old version of this route queried
+// `.from('tags')`, which doesn't exist and would 500 the moment anything called it).
+router.get('/tags', async (req, res) => {
+  const { data: products, error } = await supabaseAdmin
+    .from('products')
+    .select('tags')
+    .eq('status', 'active');
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  const counts = new Map();
+  for (const p of products) {
+    for (const t of p.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
+  }
+
+  const tags = Array.from(counts.entries())
+    .map(([slug, count]) => ({ slug, name: slug.replace(/-/g, ' '), count }))
+    .sort((a, b) => b.count - a.count);
+
+  res.json({ tags });
 });
 
 router.get('/site-content', async (req, res) => {

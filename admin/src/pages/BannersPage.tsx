@@ -16,6 +16,13 @@ import { useApiResource } from '@/hooks/useSupabase'
 import { apiFetch } from '@/lib/api'
 import { toast } from 'sonner'
 import { ImageUpload } from '@/components/shared/ImageUpload'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface Banner {
   id: string
@@ -30,8 +37,11 @@ interface Banner {
 }
 
 const PLACEMENT_OPTIONS = [
-  { value: 'products_hero', label: 'Products page hero' },
-  { value: 'homepage_offer', label: 'Homepage offer card' },
+  { value: 'products_hero', label: 'Products Hero' },
+  { value: 'homepage_offer', label: 'Best Offers' },
+  { value: 'homepage_promo', label: 'Promo Banners' },
+  { value: 'homepage_hero', label: 'Hero Slider' },
+  { value: 'homepage_collection', label: 'Collections' },
 ]
 
 export function BannersPage() {
@@ -82,8 +92,8 @@ export function BannersPage() {
     try {
       const body = {
         title,
-        subtitle: subtitle || null,
-        link_url: linkUrl || null,
+        subtitle,
+        link_url: linkUrl,
         image_url: imageUrl || null,
         sort_order: Number(sortOrder) || 0,
         placement,
@@ -108,7 +118,10 @@ export function BannersPage() {
 
   async function handleToggleActive(banner: Banner) {
     try {
-      await apiFetch(`/banners/${banner.id}`, { method: 'PUT', body: JSON.stringify({ is_active: !banner.is_active }) })
+      await apiFetch(`/banners/${banner.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ is_active: !banner.is_active }),
+      })
       refetch()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to update banner')
@@ -146,26 +159,31 @@ export function BannersPage() {
                 <Input id="b-title" value={title} onChange={(e) => setTitle(e.target.value)} required />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="b-subtitle">Subtitle / description</Label>
+                <Label htmlFor="b-subtitle">Subtitle</Label>
                 <Input id="b-subtitle" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="b-placement">Show on</Label>
-                <select
-                  id="b-placement"
+                <Select
                   value={placement}
-                  onChange={(e) => setPlacement(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  onValueChange={(v) => setPlacement(v ?? 'products_hero')}
                 >
-                  {PLACEMENT_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger>
+                    <SelectValue>
+                      {(value: string) => PLACEMENT_OPTIONS.find((o) => o.value === value)?.label ?? value}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="min-w-[200px]">
+                    {PLACEMENT_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="b-badge">Badge text (e.g. "50% Off")</Label>
+                <Label htmlFor="b-badge">Badge text</Label>
                 <Input
                   id="b-badge"
                   value={badgeText}
@@ -209,9 +227,8 @@ export function BannersPage() {
             <TableRow>
               <TableHead className="w-16">Image</TableHead>
               <TableHead>Title</TableHead>
+              <TableHead>Show on</TableHead>
               <TableHead>Badge</TableHead>
-              <TableHead>Placement</TableHead>
-              <TableHead>Order</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-32" />
             </TableRow>
@@ -221,48 +238,34 @@ export function BannersPage() {
               <TableRow key={banner.id}>
                 <TableCell>
                   {banner.image_url ? (
-                    <img src={banner.image_url} alt="" className="h-10 w-14 rounded object-cover" />
+                    <img src={banner.image_url} alt="" className="h-10 w-10 rounded border object-cover" />
                   ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
+                    <div className="h-10 w-10 rounded border bg-muted" />
                   )}
                 </TableCell>
-                <TableCell>
-                  <div className="font-medium">{banner.title}</div>
-                  {banner.subtitle && (
-                    <div className="text-xs text-muted-foreground">{banner.subtitle}</div>
-                  )}
-                </TableCell>
-                <TableCell className="text-muted-foreground">{banner.badge_text ?? '—'}</TableCell>
+                <TableCell className="font-medium">{banner.title}</TableCell>
                 <TableCell>
                   <Badge variant="outline">{placementLabel(banner.placement)}</Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{banner.sort_order}</TableCell>
+                <TableCell className="text-muted-foreground">{banner.badge_text ?? '—'}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant={banner.is_active ? 'default' : 'secondary'}
-                    className="cursor-pointer"
-                    onClick={() => handleToggleActive(banner)}
-                  >
+                  <Badge variant={banner.is_active ? 'default' : 'secondary'}>
                     {banner.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                 </TableCell>
                 <TableCell className="flex justify-end gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(banner)}>
+                  <Button size="sm" variant="ghost" onClick={() => handleEdit(banner)}>
                     Edit
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(banner.id, banner.title)}>
+                  <Button size="sm" variant="ghost" onClick={() => handleToggleActive(banner)}>
+                    {banner.is_active ? 'Deactivate' : 'Activate'}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleDelete(banner.id, banner.title)}>
                     Delete
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
-            {data.banners.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  No banners yet.
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       )}
