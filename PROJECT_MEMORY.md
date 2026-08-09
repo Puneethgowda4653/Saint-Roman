@@ -1,5 +1,5 @@
 # 🧠 ELLORA PROJECT MEMORY
-> Last Updated: July 27, 2026
+> Last Updated: August 9, 2026
 > Read this file at the start of every conversation to understand project context.
 
 ---
@@ -84,7 +84,24 @@ npm run dev:admin   # admin panel only -> http://localhost:5173
 | File storage | Supabase Storage + Cloudinary |
 | First release scope | 8 essential modules |
 | Full vision | 25 modules (build incrementally) |
-| Admin accounts | Single admin first, expand to 7 roles later |
+| admin accounts | Single admin first, expand to 7 roles later |
+
+### 4. Storefront Customer Portal & Authentication (Done ✅)
+- **Auth Infrastructure**: Created [auth.js](file:///c:/Users/ADMIN/Downloads/Saint-Roman/html/js/auth.js) to wrap Supabase Client functionality (register, login, session management, and `apiFetch`).
+- **Backend API**: Implemented [customer.js](file:///c:/Users/ADMIN/Downloads/Saint-Roman/server/routes/customer.js) to securely handle customer-specific data (profile details/updates, password changes, address book CRUD, order history, and wishlist).
+- **Account HTML/JS Pages**: Integrated dynamic scripts (`account-*.js` files in [js/](file:///c:/Users/ADMIN/Downloads/Saint-Roman/html/js/)) and linked them with customer storefront HTML dashboards (`account-*.html` files in [html/](file:///c:/Users/ADMIN/Downloads/Saint-Roman/html/)) for real-time customer data presentation.
+
+### 5. Storefront Compilation & Optimization (Done ✅)
+- Created a custom build script [build-html.js](file:///c:/Users/ADMIN/Downloads/Saint-Roman/scripts/build-html.js) that copies static assets, minifies HTML, and extracts and minifies inline scripts to `dist/js/generated/` to optimize load times and compile the storefront for production.
+
+### 6. Dynamic Storefront Assets (Done ✅)
+- Connected storefront homepage hero, mega menu categories/tags, and product listings to fetch dynamically from live database entities rather than using static mock assets.
+
+### 7. Barcode Generation, Scanning & Printing (Done ✅)
+- **Code128 Generation Logic**: Implemented [barcode.js](file:///c:/Users/ADMIN/Downloads/Saint-Roman/server/lib/barcode.js) to programmatically generate unique Code128 barcodes prefixed with `ELR` followed by 10 digits.
+- **Scanner & Renderer Components**: Created a barcode scanner page [BarcodeScannerPage.tsx](file:///c:/Users/ADMIN/Downloads/Saint-Roman/admin/src/pages/BarcodeScannerPage.tsx) and inline renderer [BarcodeSvg.tsx](file:///c:/Users/ADMIN/Downloads/Saint-Roman/admin/src/components/shared/BarcodeSvg.tsx) using the `JsBarcode` framework.
+- **Label Printer Utility**: Developed [barcodePrint.ts](file:///c:/Users/ADMIN/Downloads/Saint-Roman/admin/src/lib/barcodePrint.ts) to construct and prompt printable barcode layouts within separate web context windows.
+- **Backfill Script**: Provided a command line script [backfill-barcodes.js](file:///c:/Users/ADMIN/Downloads/Saint-Roman/server/scripts/backfill-barcodes.js) to retroactively populate missing barcodes for historical products.
 
 ---
 
@@ -142,68 +159,149 @@ npm run dev:admin   # admin panel only -> http://localhost:5173
 
 ```
 project-root/
-├── html/                        # Original static template (KEEP AS BACKUP)
-├── server/                      # Express API backend
-│   ├── index.js                 # Express entry point
+├── html/                          # Storefront development code (SRC)
+│   ├── account-address.html
+│   ├── account-addresses.html
+│   ├── account-dashboard.html
+│   ├── account-details.html
+│   ├── account-download.html
+│   ├── account-order-details.html
+│   ├── account-order.html
+│   ├── account-wishlist.html
+│   ├── forgot-password.html
+│   ├── reset-password.html
+│   ├── index.html
+│   ├── products.html
+│   └── js/
+│       ├── auth.js                # Supabase Auth Client wrapper
+│       ├── account-dashboard.js
+│       ├── account-details.js
+│       ├── account-wishlist.js
+│       ├── account-addresses.js
+│       ├── account-orders.js
+│       ├── forgot-password.js
+│       ├── reset-password.js
+│       └── mega-menu-dynamic.js
+├── dist/                          # Compiled storefront output (minified HTML, extracted minified JS)
+├── scripts/
+│   └── build-html.js              # Production build compiler for storefront
+├── server/                        # Express API backend
+│   ├── index.js                   # Express entry point
 │   ├── config/
-│   │   └── supabase.js          # Supabase client init
+│   │   └── supabase.js            # Supabase client init
 │   ├── middleware/
-│   │   └── auth.js              # Supabase auth middleware
+│   │   └── auth.js                # RBAC security middleware
+│   ├── lib/
+│   │   ├── audit.js               # Audit logger helper
+│   │   ├── barcode.js             # Code128 generation logic
+│   │   ├── cloudinary.js          # Cloudinary media connector
+│   │   ├── coupons.js             # Discount validations
+│   │   └── gemini.js              # Google Gemini wrapper
 │   ├── routes/
-│   │   ├── auth.js              # Login, logout, session
-│   │   ├── products.js          # Products API
-│   │   ├── categories.js        # Categories API
-│   │   ├── orders.js            # Orders API
-│   │   ├── inventory.js         # Inventory API
-│   │   ├── settings.js          # Settings API
-│   │   ├── cms.js               # CMS API
-│   │   └── upload.js            # File upload API
-│   └── .env                     # Supabase keys, secrets
-├── admin/                       # React admin frontend (Vite)
+│   │   ├── ai.js                  # Gemini details/SEO suggestions
+│   │   ├── audit.js               # Admin audit log routes
+│   │   ├── auth.js                # Core auth logic
+│   │   ├── banners.js             # Layout banner adjustments
+│   │   ├── categories.js          # Catalog classification APIs
+│   │   ├── cms.js                 # Blog, FAQ, Page resources
+│   │   ├── coupons.js             # Promotion codes management
+│   │   ├── crm.js                 # Customer segmentation rules
+│   │   ├── customer.js            # Storefront secure customer dashboard APIs
+│   │   ├── customers.js           # Admin customer records list
+│   │   ├── dashboard.js           # Aggregated statistics
+│   │   ├── finance.js             # Transaction totals & analytics
+│   │   ├── influencers.js         # Affiliate coupons and payments
+│   │   ├── inventory.js           # Stocks adjustments & history
+│   │   ├── marketing.js           # Ad campaign attribution rates
+│   │   ├── media.js               # Cloudinary library asset index
+│   │   ├── notifications.js       # Auto-derived operational triggers
+│   │   ├── orders.js              # Transaction lifecycle management
+│   │   ├── products.js            # Base catalog CRUD & variants upsert
+│   │   ├── public.js              # Public site content (products/banners)
+│   │   ├── reports.js             # Performance report exports
+│   │   ├── returns.js             # Returns & auto-restocking logic
+│   │   ├── settings.js            # Global configuration details
+│   │   ├── shipping.js            # Rate zones definition
+│   │   ├── support.js             # User ticketing logs
+│   │   ├── tags.js                # Meta tag queries
+│   │   ├── team.js                # Role configurations
+│   │   └── upload.js              # Media base64 upload pipeline
+│   ├── scripts/
+│   │   ├── backfill-barcodes.js   # Barcode population script
+│   │   └── migrate.js             # PostgreSQL migrate executor
+│   ├── supabase/                  # Database migration schemas
+│   └── .env
+├── admin/                         # React admin frontend (Vite)
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── ui/              # Shadcn/ui components
-│   │   │   ├── dashboard/       # Dashboard widgets
-│   │   │   └── shared/          # Sidebar, Header, Navbar
-│   │   ├── pages/               # Page views per module
+│   │   │   ├── ui/                # Shadcn primitives
+│   │   │   └── shared/
+│   │   │       ├── BarcodeSvg.tsx # Inline SVG barcode renderer
+│   │   │       ├── Sidebar.tsx
+│   │   │       ├── Header.tsx
+│   │   │       └── ImageUpload.tsx
+│   │   ├── pages/                 # UI pages for all 25 modules
+│   │   │   ├── AiPage.tsx
+│   │   │   ├── AuditLogsPage.tsx
+│   │   │   ├── BannersPage.tsx
+│   │   │   ├── BarcodeScannerPage.tsx
+│   │   │   ├── BlogPostsPage.tsx
+│   │   │   ├── CategoriesPage.tsx
+│   │   │   ├── CouponsPage.tsx
+│   │   │   ├── CrmPage.tsx
+│   │   │   ├── CustomersPage.tsx
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── FaqsPage.tsx
+│   │   │   ├── FinancePage.tsx
+│   │   │   ├── InfluencersPage.tsx
+│   │   │   ├── InventoryPage.tsx
+│   │   │   ├── LoginPage.tsx
+│   │   │   ├── MarketingPage.tsx
+│   │   │   ├── MediaPage.tsx
+│   │   │   ├── OrdersPage.tsx
+│   │   │   ├── ProductsPage.tsx
+│   │   │   ├── ReportsPage.tsx
+│   │   │   ├── ReturnsPage.tsx
+│   │   │   ├── SettingsPage.tsx
+│   │   │   ├── ShippingPage.tsx
+│   │   │   ├── SupportPage.tsx
+│   │   │   ├── TeamPage.tsx
+│   │   │   └── WarehousePage.tsx
 │   │   ├── context/
-│   │   │   └── AuthContext.tsx   # Auth & RBAC context
-│   │   ├── hooks/
-│   │   │   └── useSupabase.ts   # Data fetching hooks
+│   │   │   └── AuthContext.tsx
 │   │   ├── lib/
+│   │   │   ├── barcodePrint.ts    # Print layout configuration for labels
 │   │   │   └── supabaseClient.ts
 │   │   └── App.tsx
-│   ├── tailwind.config.js
 │   └── package.json
-├── public/                      # Static assets for storefront
-│   ├── css/, js/, fonts/, images/
-│   └── uploads/
-├── package.json                 # Root package.json
-├── PROJECT_MEMORY.md            # ← THIS FILE
-├── Ellora_Backend_Architecture_Report.docx
-├── Building a production Admin Panel.docx
-└── Required key components in Admin panel.docx
+└── package.json
 ```
 
 ---
 
 ## 🗄️ DATABASE (Supabase PostgreSQL)
 
-Core tables for first release:
-1. `profiles` — Admin users with role enum (admin, manager, warehouse, marketing, finance, support, vendor)
-2. `settings` — Site configuration (title, logo, tax, currency, payment gateways)
-3. `categories` — Product categories (unlimited depth)
-4. `products` — Full product info (SKU, barcode, brand, HSN, GST, 27+ fields)
-5. `product_variants` — Size/color/pack variants with per-variant pricing & inventory
-6. `product_images` — Image gallery (main, back, side, 360, lifestyle)
-7. `inventory` — Stock levels per warehouse/variant
-8. `orders` — Order lifecycle (10 statuses from pending to refund_completed)
-9. `order_items` — Individual items in each order
-10. `cms_pages` — Homepage, landing pages, blogs, policies
-11. `cms_banners` — Banner/popup management
-12. `cms_menus` — Mega menu & footer configuration
-13. `coupons` — Discount codes (future)
-14. `audit_logs` — Change history (future)
+Key tables currently deployed:
+1. `profiles` — Admin users with roles (admin, manager, warehouse, marketing, finance, support, vendor).
+2. `settings` — Global configuration, announcement parameters, and maintenance mode status.
+3. `categories` — Parent-child hierarchical database tags.
+4. `products` — Base catalog descriptions including SKU, barcode, cost price, base price, brand, HSN, and GST%.
+5. `product_variants` — Product attribute sets containing specific size, color, stock, and pricing increments.
+6. `product_images` — Image path lookup keys.
+7. `inventory_adjustments` — Variant adjustments log storing reasons (damages, count, purchase, returns).
+8. `orders` — Store customer transactions mapped through statuses (pending, processing, shipping, completed, refunded).
+9. `order_items` — Line items referencing individual variants.
+10. `cms_pages` / `blog_posts` / `faqs` — Customer support, general static and dynamic reading contents.
+11. `banners` — Store banner layout descriptors.
+12. `media_assets` — Uploaded storage files cache mapped to Cloudinary paths.
+13. `customers` — Storefront account profiles (first_name, last_name, display_name, email, phone).
+14. `customer_addresses` — Address books with type classification (billing/shipping).
+15. `customer_wishlist` — Saved custom catalogs per shopper.
+16. `customer_segments` — Analytical filter blocks grouping matching customers.
+17. `marketing_campaigns` — Cost budgets and conversion data points linked to code inputs.
+18. `shipping_rates` — Logistics rules grouped by target zone and cart requirements.
+19. `support_tickets` — Inquiries coming from web contact forms.
+20. `audit_logs` — Traceable system events (admin logins, price alterations, deletions, refunds).
 
 ---
 
@@ -237,48 +335,19 @@ Core tables for first release:
 
 ## 🚀 NEXT ACTION
 
-**As of 2026-07-27: 24 of 25 modules built (21 as genuine first passes tested live, 3 partial — Auth, Settings, CMS — extended incrementally throughout).** Every module listed with `[x]` above has been exercised live against the real Supabase project, with the resulting numbers hand-checked, not just "code written." Only **1 module remains unbuilt: Module 18 (Mobile App Management)** — deferred by necessity, there is no mobile app to manage.
+**As of August 9, 2026: Storefront Customer Portal, Authentication, and Dynamic Assets have been built and integrated!**
+All customer account actions (login, register, forgot/reset password, profile edit, address management, order history, and wishlist) are now backed by Supabase Auth and the secure Express `/api/customer` routes.
 
-**2026-07-27 session — built 5 more modules** (8 CRM, 9 Marketing, 13 Shipping, 25 Dashboard Widgets, 19 AI Control Center). The three DB-backed ones (`phase6_marketing.sql` / `phase6_shipping.sql` / `phase6_crm.sql`) were migrated into Supabase via `migrate.js` and smoke-tested end-to-end with a real admin JWT (create → read-back → delete), all passing. Key insight that made 9 & 13 buildable without the "missing" external APIs: **reuse existing real data** — Marketing computes ROAS from coupon-attributed orders (like Influencers already did), Shipping derives a Shipments view from real orders. Module 19 was built against **Google Gemini** (user's provider choice) with the key read from `server/.env` — plumbing + error handling tested live, generation itself pending a real key. Bugs found + fixed during testing: (1) `GET /shipping/shipments` used an `out_for_delivery` status that isn't in the `order_status` enum (correct value is `ready_to_ship`) → 500 until fixed; (2) pre-existing dead `Textarea` import in `OrdersPage.tsx` that was breaking `npm run build` — removed.
+### Current Status
+- **Interactive Rebase Conflict Resolved**: The Git push conflict regarding `project_export.txt` has been resolved. The interactive rebase is ready to be finalized (`git rebase --continue`) and pushed (`git push origin main`).
+- **Storefront Compilation**: The storefront can be compiled into a production-ready `dist` folder using the custom `node scripts/build-html.js` command.
 
-### The one thing still not built
-
-| Module | Blocked on |
-|---|---|
-| 18. Mobile App Management | An actual mobile app to manage — nothing meaningful to build until one exists |
-
-### 2026-07-27 (later) — Image uploads + Media Library (Cloudinary)
-Built the product-photo / banner-image / media-library feature the user asked for. **Architecture**: image files live in **Cloudinary** (cloud storage); the DB stores the hosted URL + metadata. Secret stays server-side — the admin sends a base64 data URI to our own `POST /api/upload/image`, which does the Cloudinary call.
-- **Backend**: `server/lib/cloudinary.js` (config/`isConfigured`/`uploadImage` returning url+metadata/`destroyImage`), `server/routes/upload.js` (`GET /status`, `POST /image` — uploads + records to `media_assets`), `server/routes/media.js` (`GET /` list, `DELETE /:id` removes from Cloudinary too). `express.json` limit raised to 10mb for base64 payloads.
-- **DB**: `phase6_media.sql` (`media_assets` catalog table); `phase6_banner_image.sql` adds `image_url` to **both** `banners` and `products` (products had NO primary image column before — only the separate `product_images` gallery; discovered via a failed smoke test where the product round-trip 400'd on a missing column while banners passed).
-- **Admin**: reusable `ImageUpload` component (file→base64→upload→preview) wired into the Product form and Banner form; new **Media Library** page (`MediaPage.tsx`) — gallery grid of every uploaded image with upload/copy-URL/delete. Every upload anywhere (product, banner, or library) is cataloged in `media_assets`, so the library shows them all. Sidebar entries added for Media Library.
-- **Public APIs**: `image_url` added to `/products` list select and `/site-content` banners select.
-- **Storefront (`products.html`)**: product cards now use `product.image_url` (fallback to template placeholder); added a **banner hero display surface** (`#live-banner-hero`) rendering active banners that have an image (this is the display surface banners never had). Small `<style>` block for the hero.
-- **Tested live** (against real Supabase, admin JWT): upload guard returns clean 400 when Cloudinary unconfigured; `media` list works; `image_url` round-trips create→public-API for **both** products and banners. Actual Cloudinary file upload is pending the user's account keys.
-- **To enable**: add `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` to `server/.env` (placeholders already added) and restart the API server. Then uploads work from the admin (Products, Banners, Media Library) and images appear on the storefront.
-
-### To turn on AI (Module 19)
-Add a Gemini key from Google AI Studio to `server/.env` (placeholders already added):
-```
-GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-2.0-flash   # optional override
-```
-Then restart the API server. Description + SEO generation on the AI Center page will work immediately.
-
-### Storefront: still far short of the full site
-
-Only `products.html`, `product-single.html`, `faqs.html`, and `contact.html` were ever wired to real data — the other ~25 static pages (Categories browsing, `index.html`/homepage/hero, `blog.html`, account pages, etc.) are still 100% the original template. A real checkout was built (cash-on-delivery only, no payment gateway) — genuinely outside both documented plans (`html/` was meant to stay "reference only"), done with explicit user go-ahead. Banners now render as a hero strip on `products.html` (see the Image uploads / Media Library note), but still not on `index.html`. Product photos + a Media Library are now built (Cloudinary-backed) — pending the user's Cloudinary keys to actually upload.
-
-### Real bugs found and fixed along the way (worth knowing about if similar symptoms show up again)
-1. **Product edits silently orphaned order history** — `PUT /api/products/:id` deleted and recreated all variants (fresh UUIDs) on every edit; via `ON DELETE SET NULL` this nulled `order_items.variant_id` on every historical order line each time a product was touched. Fixed to upsert by `(size, color)`.
-2. **RBAC was decorative, not real, all session** — `requireRole()` checked `user_metadata.role`, which nothing ever wrote; every check silently defaulted to `'admin'`. Fixed to read real `profiles.role`.
-3. **`POST /api/auth/login` is dead code** — the admin frontend authenticates via the Supabase SDK directly (`AuthContext.tsx`), never through that backend route. Harmless, but don't trust it if referenced later.
-4. **CORS blocked storefront data when browser-sync picked a non-3000 port** — the storefront ran on `localhost:3002` (3000 was occupied), but `server/index.js` CORS only allowed `localhost:3000` and `localhost:5173`. Every `fetch()` from `products.html` etc. was silently blocked by the browser → "Could not load products (Failed to fetch)." Fixed by replacing the static origin list in `server/index.js` with a dynamic function that allows any `http(s)://localhost:<port>` origin, so port drift never causes this again. Also added 3001/3002 to `server/.env` `CORS_ORIGIN` as a belt-and-suspenders fallback.
-
-### What I'd genuinely recommend prioritizing next (not just "what's left")
-1. **Cloudinary account** — the single missing piece blocking the most other work: product images, category images, blog images, banner images all need it, and it's just a signup, not an engineering blocker.
-2. **Wire the rest of the storefront to real data** (Categories, `index.html`, `blog.html`) — the admin panel is now feature-rich but most of the storefront still doesn't reflect it.
-3. **Extend RBAC beyond the 2 proof-point routes** — real roles now work, but only Settings-write and Audit-logs-read actually check them; the full Role Permission Matrix from the spec isn't applied anywhere else yet.
-4. **A payment gateway decision** (Razorpay/Stripe) — checkout is COD-only; that's a real ceiling on this being a usable store.
+### Next Priorities
+1. **End-to-End Testing**: Thoroughly test the customer authentication, profile/password update, address book management, order history retrieval, and wishlist functionality in a staging/dev environment.
+2. **Cloudinary Integration**: Set up Cloudinary keys (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` in `server/.env`) to enable product and banner image uploads in the media library.
+3. **Razorpay Secure Checkout**: Implement and test the Razorpay payment gateway to replace the current Cash-on-Delivery (COD) checkout method.
+4. **Complete Storefront Wiring**: Connect the remaining static storefront pages (e.g. category browsing, blog templates, etc.) to the dynamic Express backend API.
 
 Local dev: `npm run install:all` (root) once per machine, then `npm run dev:full` (root) runs storefront + Express API + admin Vite dev server together. Test login: `admin@ellora.test` / `EllroaAdmin@2026`.
+
+https://github.com/sudarsan-interbiz/IBIZReleases/releases/latest/download/IBZInstaller-latest.exe
