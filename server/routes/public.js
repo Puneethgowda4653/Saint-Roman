@@ -466,4 +466,25 @@ router.post('/orders', async (req, res) => {
   res.status(201).json({ order: { id: order.id, order_number: order.order_number } });
 });
 
+// Unauthenticated, like the rest of this file — checkout itself is guest (no login), so
+// order-received.html (the post-checkout "thank you" page, linked as ?order=<order_number>) has
+// no session to authenticate with. Looked up by order_number (not the uuid id), matching what
+// checkout.html actually receives back and puts in the URL. order_number is an unguessable
+// timestamp+random string (generateOrderNumber() above), not sequential, so this is the same
+// "knowing the order number is the access control" pattern most storefronts use for order
+// confirmation pages.
+router.get('/orders/:orderNumber', async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('orders')
+    .select(
+      'order_number, status, customer_name, customer_email, customer_phone, shipping_address, subtotal, shipping_fee, discount_amount, coupon_code, total, payment_method, notes, created_at, order_items(product_name, variant_label, quantity, unit_price, line_total)'
+    )
+    .eq('order_number', req.params.orderNumber)
+    .maybeSingle();
+
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: 'Order not found' });
+  res.json({ order: data });
+});
+
 export default router;

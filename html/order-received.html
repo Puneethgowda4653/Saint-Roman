@@ -290,32 +290,25 @@
                             <div class="order-receive-sidebar-item order-receive-box wow fadeInUp">
                                 <h2 class="order-sidebar-item-title">Order Received</h2>
                                 <ul>
-                                    <li>Order number<span>#236</span></li>
-                                    <li>Order Date<span>April 13, 2026</span></li>
-                                    <li>Payment method:<span>Direct bank transfer</span></li>
-                                    <li>Total:<span><b>₹490</b></span></li>
+                                    <li>Order number<span id="order-number-value">&hellip;</span></li>
+                                    <li>Order Date<span id="order-date-value">&hellip;</span></li>
+                                    <li>Payment method:<span id="order-payment-method-value">&hellip;</span></li>
+                                    <li>Total:<span><b id="order-total-value">&hellip;</b></span></li>
                                 </ul>
                             </div>
                             <!-- Order Receive Sidebar Item End -->
-                            
+
                             <!-- Order Receive Sidebar Item Start -->
                             <div class="order-receive-sidebar-item wow fadeInUp" data-wow-delay="0.2s">
                                 <h2 class="order-sidebar-item-title">Billing address</h2>
-                                <ul>
-                                    <li>Sophia Brown</li>
-                                    <li>221B Baker Street, Marylebone, London NW1 6XE, Green Park</li>
-                                    <li><a href="tel:997840329">997840329</a> <a href="mailto:infodomain@gmail.com">infodomain@gmail.com</a></li>
-                                </ul>
+                                <ul id="billing-address-list"></ul>
                             </div>
                             <!-- Order Receive Sidebar Item End -->
-                            
+
                             <!-- Order Receive Sidebar Item Start -->
                             <div class="order-receive-sidebar-item wow fadeInUp" data-wow-delay="0.4s">
                                 <h2 class="order-sidebar-item-title">Shipping address</h2>
-                                <ul>
-                                    <li>Sophia Brown</li>
-                                    <li>221B Baker Street, Marylebone, London NW1 6XE, Green Park</li>
-                                </ul>
+                                <ul id="shipping-address-list"></ul>
                             </div>
                             <!-- Order Receive Sidebar Item End -->
                         </div>
@@ -335,18 +328,11 @@
                         <!-- Order Receive Title Box End -->
                         
                         <!-- Order Receive Content List Start -->
+                        <!-- Filled in live by js/order-received-dynamic.js from server/routes/public.js GET /orders/:orderNumber -->
                         <div class="order-receive-content-list wow fadeInUp" data-wow-delay="0.2s">
-                            <ul>
+                            <ul id="order-receive-list">
                                 <li class="order-receive-content-list-title">Product <span>Total</span></li>
-                                <li>Digital Product  - 01 <span>₹35</span></li>
-                                <li>Digital Product  - 02 <span>₹35</span></li>
-                                <li>Digital Product  - 03 <span>₹35</span></li>
-                                <li>Subtotal: <span>₹105</span></li>
-                                <li>Shipping: <span>Free shipping</span></li>
-                                <li>Tax: <span>₹350</span></li>
-                                <li>Total: <span>₹490</span></li>
-                                <li>Payment method: <span>Direct bank transfer</span></li>
-                                <li>Note: <span>This is a gift for a special occasion, please include a thank you note. Kindly use gift wrapping and avoid including invoice inside the package.</span></li>
+                                <li>Loading order&hellip;</li>
                             </ul>
                         </div>
                         <!-- Order Receive Content List End -->
@@ -502,13 +488,9 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
-    <script>
-        (function () {
-            var orderNumber = new URLSearchParams(window.location.search).get('order');
-            if (orderNumber) {
-                document.getElementById('order-number').textContent = 'ORDER ' + orderNumber;
-            }
-        })();
-    </script>
+    <script src="js/currency.js"></script>
+
+    <!-- Live order data from server/routes/public.js GET /orders/:orderNumber -->
+    <script src="js/order-received-dynamic.js"></script>
 </body>
 </html>
