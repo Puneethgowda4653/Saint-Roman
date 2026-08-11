@@ -18,46 +18,8 @@
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    function escapeHtml(str) {
-        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    // The admin's Blog Posts "Content" field (admin/src/pages/BlogPostsPage.tsx) is a plain
-    // <Textarea> — posts are stored as unstructured plain text, no HTML/Markdown. Dumping that
-    // straight into .post-entry as one innerHTML string collapses every blank line and numbered
-    // item into a single run-on paragraph, because HTML ignores literal newlines. This rebuilds
-    // real <p> paragraphs (split on blank lines) and turns a block of consecutive "1. ..." /
-    // "- ..." lines into a proper <ul><li> list, matching the theme's .post-entry markup/CSS.
-    // If a post's content already contains real markup (e.g. from a future rich-text editor),
-    // it's passed straight through instead of being re-escaped.
-    function looksLikeHtml(str) {
-        return /<\/?(p|h[1-6]|ul|ol|li|blockquote|strong|em|br|div|span|a)[\s>]/i.test(str);
-    }
-
-    function formatPlainTextContent(raw) {
-        var blocks = raw.replace(/\r\n/g, '\n').split(/\n\s*\n/);
-        return blocks
-            .map(function (block) {
-                var lines = block.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
-                if (!lines.length) return '';
-
-                var isList = lines.length > 1 && lines.every(function (l) { return /^(\d+[.)]|[-*])\s+/.test(l); });
-                if (isList) {
-                    var items = lines
-                        .map(function (l) { return '<li>' + escapeHtml(l.replace(/^(\d+[.)]|[-*])\s+/, '')) + '</li>'; })
-                        .join('');
-                    return '<ul>' + items + '</ul>';
-                }
-
-                return '<p>' + escapeHtml(lines.join(' ')) + '</p>';
-            })
-            .join('');
-    }
-
-    function renderContent(raw) {
-        if (!raw) return '<p>No content available.</p>';
-        return looksLikeHtml(raw) ? raw : formatPlainTextContent(raw);
-    }
+    // See js/text-format.js (EllroaText) for how plain-text content becomes real <p>/<ul><li>
+    // markup instead of one run-on paragraph.
 
     // The theme reveals .text-anime-style-3 headings once, on document.fonts.ready / window
     // 'load' (see js/function.js initHeadingAnimation), by splitting whatever text is already
@@ -116,7 +78,7 @@
             dateEl.innerHTML = '<i class="fa-regular fa-clock"></i> ' + formatDate(post.published_at || post.created_at);
             imageEl.src = post.featured_image_url || 'images/post-1.jpg';
             imageEl.alt = post.title || '';
-            contentEl.innerHTML = renderContent(post.content);
+            contentEl.innerHTML = EllroaText.render(post.content, 'No content available.');
         })
         .catch(function () {
             showNotFound();

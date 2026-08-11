@@ -11,13 +11,16 @@
 //      strip, matching how the rest of the storefront (products.html, homepage) already do it.
 //   2. Price used '$' + toFixed(2); now uses the shared EllroaCurrency.format() (js/currency.js).
 //   3. Description/Additional Information/Reviews tabs were the same static template copy on
-//      every product. Description comes from products.description (real column). Additional
-//      Information comes from products.specifications (jsonb, phase8_product_specifications.sql)
-//      — a flexible label/value store filled in per-product via the admin's product form, since
-//      no category-agnostic fixed columns for this exist or make sense (a t-shirt's Fit/Neckline
-//      don't apply to a watch or a lipstick). Both tabs honestly say so if nothing is set. There
-//      is no reviews table anywhere in server/supabase/*.sql, so Reviews honestly shows "No
-//      reviews yet" / "Reviews (0)" instead of 50 fake ones.
+//      every product. Description comes from products.description (real column), reformatted
+//      from plain text into real <p>/<ul><li> markup via js/text-format.js so it matches the
+//      paragraph breaks and feature lists the admin actually typed, instead of one run-on
+//      paragraph. Additional Information comes from products.specifications (jsonb,
+//      phase8_product_specifications.sql) — a flexible label/value store filled in per-product
+//      via the admin's product form, since no category-agnostic fixed columns for this exist or
+//      make sense (a t-shirt's Fit/Neckline don't apply to a watch or a lipstick). Both tabs
+//      honestly say so if nothing is set. There is no reviews table anywhere in
+//      server/supabase/*.sql, so Reviews honestly shows "No reviews yet" / "Reviews (0)" instead
+//      of 50 fake ones.
 //   4. Related products reused the existing GET /products?category=<slug> endpoint (same one
 //      products.html uses for the main grid) instead of a new endpoint or fabricated data —
 //      fetches products in the same category, excludes the current product, and shows however
@@ -51,10 +54,6 @@
         window.location.href = 'cart.html';
     });
 
-    function escapeHtml(str) {
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
     // Single real image per product (products.image_url) — repeated across every slide in both
     // sliders, matching the "single image_url, not a gallery" data shape. Only overwritten when
     // the product actually has one set; otherwise the template's static placeholder image stays,
@@ -67,12 +66,16 @@
         });
     }
 
+    // The admin's Description field (admin/src/pages/ProductsPage.tsx) is a plain <Textarea> —
+    // authors write real paragraph breaks and feature lists into it (blank line = new paragraph,
+    // consecutive lines = a list), but dumping that string straight into one <p> ignores all of
+    // that structure since HTML collapses literal newlines. EllroaText.render (js/text-format.js)
+    // rebuilds real <p>/<ul><li> markup so the storefront matches what's actually in the admin
+    // textarea instead of running everything together into one paragraph.
     function renderDescriptionTab(product) {
         var el = document.getElementById('product-description-tab');
         if (!el) return;
-        el.innerHTML = product.description
-            ? '<p>' + escapeHtml(product.description) + '</p>'
-            : '<p>No description available yet.</p>';
+        el.innerHTML = EllroaText.render(product.description, 'No description available yet.');
     }
 
     // products.specifications (jsonb, server/supabase/phase8_product_specifications.sql) — a
@@ -95,7 +98,7 @@
         }
 
         container.innerHTML = '<table>' + rows.map(function (label) {
-            return '<tr><td><b>' + escapeHtml(label) + '</b></td><td>' + escapeHtml(specs[label]) + '</td></tr>';
+            return '<tr><td><b>' + EllroaText.escapeHtml(label) + '</b></td><td>' + EllroaText.escapeHtml(specs[label]) + '</td></tr>';
         }).join('') + '</table>';
     }
 
