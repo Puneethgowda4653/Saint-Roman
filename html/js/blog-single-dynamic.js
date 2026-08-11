@@ -61,17 +61,21 @@
 
     // The theme reveals .text-anime-style-3 headings once, on document.fonts.ready / window
     // 'load' (see js/function.js initHeadingAnimation), by splitting whatever text is already
-    // in the element. That already runs before this script's fetch resolves, against the static
-    // placeholder title — so once we swap in the real title we re-run the exact same split/reveal
-    // routine (function.js has a "reset if needed" branch for this) instead of leaving the element
-    // as plain, unanimated text.
-    function reanimateHeading(el) {
-        if (typeof gsap === 'undefined' || typeof SplitText === 'undefined' || !el) return;
+    // in the element (the static placeholder title) into per-char spans. That split runs before
+    // this script's fetch resolves. SplitText.revert() restores the element to the exact markup
+    // it captured when THAT split was created — i.e. the placeholder text, not whatever the
+    // element currently contains — so revert() must happen BEFORE the real title is written in,
+    // never after. (An earlier version here set the real text first and reverted after, which
+    // silently discarded the real title and put the placeholder back.)
+    function setHeadingText(el, text) {
+        if (!el) return;
 
-        if (el.animation) {
-            el.animation.progress(1).kill();
-            if (el.split) el.split.revert();
-        }
+        if (el.animation) el.animation.progress(1).kill();
+        if (el.split) el.split.revert();
+
+        el.textContent = text;
+
+        if (typeof gsap === 'undefined' || typeof SplitText === 'undefined') return;
 
         el.split = new SplitText(el, { type: 'lines,words,chars', linesClass: 'split-line' });
         gsap.set(el, { perspective: 400 });
@@ -89,11 +93,10 @@
     }
 
     function showNotFound() {
-        titleEl.textContent = 'Post not found';
+        setHeadingText(titleEl, 'Post not found');
         document.title = 'Post not found - Ellora';
         dateEl.innerHTML = '';
         contentEl.innerHTML = '<p>Sorry, we couldn\'t find that blog post.</p>';
-        reanimateHeading(titleEl);
     }
 
     if (!slug) {
@@ -108,13 +111,12 @@
         })
         .then(function (data) {
             var post = data.post;
-            titleEl.textContent = post.title;
+            setHeadingText(titleEl, post.title);
             document.title = post.title + ' - Ellora - Fashion & Lifestyle Store eCommerce HTML Template';
             dateEl.innerHTML = '<i class="fa-regular fa-clock"></i> ' + formatDate(post.published_at || post.created_at);
             imageEl.src = post.featured_image_url || 'images/post-1.jpg';
             imageEl.alt = post.title || '';
             contentEl.innerHTML = renderContent(post.content);
-            reanimateHeading(titleEl);
         })
         .catch(function () {
             showNotFound();
