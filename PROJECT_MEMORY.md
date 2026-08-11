@@ -131,6 +131,7 @@ npm run dev:admin   # admin panel only -> http://localhost:5173
   2. `customers.address` — same error pattern, next: `Could not find the 'address' column of 'customers' in the schema cache`. `customers` (`phase4_customers.sql`) only ever had id/name/email/phone/notes.
   3. `decrement_stock(uuid, int)` RPC — found while auditing the rest of the same handler for more of the same bug class, not from a user-visible error, since it's wrapped in `.catch(() => {})`. **Every real storefront checkout order has placed successfully without ever actually decrementing stock** — silently broken since real checkout was first built. Admin-created orders (`server/routes/orders.js`) decrement stock a different way (direct update, not this RPC), so that path was unaffected.
   #2 and #3 fixed together in `server/supabase/phase10_checkout_schema_gaps.sql`. Both new migrations registered in `server/scripts/migrate.js`. **If checkout throws another `Could not find the '...' column` error after running phase10, there may be a fourth gap — audit the rest of the `POST /orders` handler in `server/routes/public.js` line by line against the real table definitions rather than assuming these three were the only ones.**
+  - **Also fixed while debugging this live**: `npm run migrate` didn't actually exist — `server/package.json` had no `"migrate"` script, only `dev`/`start`; `server/scripts/migrate.js` had to be run directly (`node scripts/migrate.js`). Added the script alias so `npm run migrate` (referenced throughout this file, including right above) actually works.
 
 ---
 
