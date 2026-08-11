@@ -23,6 +23,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useApiResource } from '@/hooks/useSupabase'
 import { apiFetch } from '@/lib/api'
 import { toast } from 'sonner'
+import { ImageUpload } from '@/components/shared/ImageUpload'
 
 interface Post {
   id: string
@@ -30,6 +31,7 @@ interface Post {
   slug: string
   excerpt: string | null
   content: string | null
+  featured_image_url: string | null
   status: 'draft' | 'published'
 }
 
@@ -49,6 +51,7 @@ export function BlogPostsPage() {
   const [title, setTitle] = useState('')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
+  const [featuredImage, setFeaturedImage] = useState('')
   const [status, setStatus] = useState<'draft' | 'published'>('draft')
   const [saving, setSaving] = useState(false)
 
@@ -57,6 +60,7 @@ export function BlogPostsPage() {
     setTitle('')
     setExcerpt('')
     setContent('')
+    setFeaturedImage('')
     setStatus('draft')
   }
 
@@ -70,6 +74,7 @@ export function BlogPostsPage() {
     setTitle(post.title)
     setExcerpt(post.excerpt ?? '')
     setContent(post.content ?? '')
+    setFeaturedImage(post.featured_image_url ?? '')
     setStatus(post.status)
     setOpen(true)
   }
@@ -78,7 +83,7 @@ export function BlogPostsPage() {
     e.preventDefault()
     setSaving(true)
     try {
-      const body = { title, slug: slugify(title), excerpt, content, status }
+      const body = { title, slug: slugify(title), excerpt, content, featured_image_url: featuredImage || null, status }
       if (editingId) {
         await apiFetch(`/cms/posts/${editingId}`, { method: 'PUT', body: JSON.stringify(body) })
         toast.success('Post updated')
@@ -121,6 +126,10 @@ export function BlogPostsPage() {
               <div className="flex flex-col gap-2">
                 <Label htmlFor="b-title">Title</Label>
                 <Input id="b-title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label>Featured Image</Label>
+                <ImageUpload value={featuredImage} onChange={setFeaturedImage} folder="ellora/blog" />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="b-excerpt">Excerpt</Label>
@@ -168,6 +177,7 @@ export function BlogPostsPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-16">Image</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Slug</TableHead>
               <TableHead>Status</TableHead>
@@ -177,6 +187,13 @@ export function BlogPostsPage() {
           <TableBody>
             {data.posts.map((post) => (
               <TableRow key={post.id}>
+                <TableCell>
+                  {post.featured_image_url ? (
+                    <img src={post.featured_image_url} alt="" className="h-10 w-10 rounded border object-cover" />
+                  ) : (
+                    <div className="h-10 w-10 rounded border bg-muted" />
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{post.title}</TableCell>
                 <TableCell className="text-muted-foreground">{post.slug}</TableCell>
                 <TableCell>
@@ -194,7 +211,7 @@ export function BlogPostsPage() {
             ))}
             {data.posts.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   No posts yet.
                 </TableCell>
               </TableRow>

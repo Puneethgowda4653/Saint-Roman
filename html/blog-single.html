@@ -262,11 +262,11 @@
                 <div class="col-lg-12">
                     <!-- Page Header Box Start -->
                     <div class="page-header-box">
-                        <h1 class="text-anime-style-3" data-cursor="-opaque">Build Your Perfect...</h1>
+                        <h1 class="text-anime-style-3" data-cursor="-opaque" id="blog-post-title">Build Your Perfect...</h1>
                         <div class="post-single-meta wow fadeInUp">
 							<ol class="breadcrumb">
                                 <li><i class="fa-regular fa-user"></i> Admin</li>
-								<li><i class="fa-regular fa-clock"></i> May 30, 2026</li>
+								<li id="blog-post-date"><i class="fa-regular fa-clock"></i> May 30, 2026</li>
                             </ol>
 						</div>
                     </div>
@@ -285,7 +285,7 @@
                     <!-- Post Featured Image Start -->
                     <div class="post-image">
                         <figure class="image-anime reveal">
-                            <img src="images/post-1.jpg" alt="">
+                            <img src="images/post-1.jpg" alt="" id="blog-post-image">
                         </figure>
                     </div>
                     <!-- Post Featured Image Start -->
@@ -293,30 +293,8 @@
                     <!-- Post Single Content Start -->
                     <div class="post-content">
                         <!-- Post Entry Start -->
-                        <div class="post-entry">
-                            <p class="wow fadeInUp">Creating a stylish wardrobe doesn't mean filling your closet with endless clothes. A capsule wardrobe focuses on quality over quantity, helping you create versatile outfits with fewer but more meaningful pieces. It simplifies your daily routine, saves money, and ensures you always have something fashionable to wear Our capsule wardrobe collection is designed to help you mix and match outfits effortlessly for every occasion, season, and lifestyle.</p>
-
-                            <p class="wow fadeInUp" data-wow-delay="0.2s">A capsule wardrobe is not about limiting your style—it's about refining it. Instead of filling your wardrobe with random trends and rarely worn clothing, you focus on timeless essentials that work together effortlessly. The result is a cleaner closet, smarter shopping habits, and a personal style that feels confident and authentic  From classic basics to modern statement pieces.</p>
-                            
-                            <blockquote class="wow fadeInUp" data-wow-delay="0.4s">
-                                <p>A capsule wardrobe is a carefully curated collection of essential clothing items that can be mixed and matched easily. These pieces are timeless, versatile, and designed to work together across different occasions and seasons.</p>
-                            </blockquote>
-
-                            <p class="wow fadeInUp" data-wow-delay="0.6s">Building a capsule wardrobe allows you to simplify your daily routine while still looking polished and fashionable. It encourages intentional fashion choices, helps reduce unnecessary spending, and creates a wardrobe built around quality instead of quantity. Whether your style is minimal, casual, elegant, or modern streetwear, a capsule wardrobe can adapt perfectly to your lifestyle.</p>
-
-                            <h2 class="wow fadeInUp" data-wow-delay="0.8s">Benefits Of A Capsule Wardrobe</h2>
-
-                            <p class="wow fadeInUp" data-wow-delay="1s">odern lifestyles often demand convenience. Busy schedules leave little time for complicated outfit planning, and many individuals want clothing that transitions easily from work to casual settings. Capsule wardrobes solve this problem by making every item versatile and easy to style.</p>
-
-                            <ul class="wow fadeInUp" data-wow-delay="1.2s">
-                                <li>With fewer clothing choices, getting dressed becomes faster and stress-free.</li>
-                                <li>You focus on buying quality essentials instead of following every trend.</li>
-                                <li>Store separately to prevent watches from rubbing and causing unwanted scratches.</li>
-                                <li>A clean and organized wardrobe makes styling easier and more enjoyable.</li>
-                                <li>You learn which colors, fits, and designs truly represent your personality.</li>
-                            </ul>
-
-                            <p class="wow fadeInUp" data-wow-delay="0.6s">Another major reason for the popularity of capsule wardrobes is sustainability. Fast fashion has contributed to excessive waste, overconsumption, and environmental damage. By investing in fewer high-quality pieces, consumers reduce.</p>
+                        <div class="post-entry" id="blog-post-content">
+                            <p>Loading&hellip;</p>
                         </div>
                         <!-- Post Entry End -->
 
@@ -503,5 +481,57 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
+    <script src="js/mega-menu-dynamic.js"></script>
+
+    <!-- Live blog post from the Ellora admin panel (server/routes/public.js) -->
+    <script>
+        (function () {
+            var API_BASE = 'http://localhost:4000/api/public';
+            var params = new URLSearchParams(window.location.search);
+            var slug = params.get('slug');
+
+            var titleEl = document.getElementById('blog-post-title');
+            var dateEl = document.getElementById('blog-post-date');
+            var imageEl = document.getElementById('blog-post-image');
+            var contentEl = document.getElementById('blog-post-content');
+
+            function formatDate(value) {
+                if (!value) return '';
+                var d = new Date(value);
+                if (isNaN(d.getTime())) return '';
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+
+            function showNotFound() {
+                titleEl.textContent = 'Post not found';
+                document.title = 'Post not found - Ellora';
+                dateEl.innerHTML = '';
+                contentEl.innerHTML = '<p>Sorry, we couldn\'t find that blog post.</p>';
+            }
+
+            if (!slug) {
+                showNotFound();
+                return;
+            }
+
+            fetch(API_BASE + '/blog-posts/' + encodeURIComponent(slug))
+                .then(function (res) {
+                    if (!res.ok) throw new Error('not found');
+                    return res.json();
+                })
+                .then(function (data) {
+                    var post = data.post;
+                    titleEl.textContent = post.title;
+                    document.title = post.title + ' - Ellora - Fashion & Lifestyle Store eCommerce HTML Template';
+                    dateEl.innerHTML = '<i class="fa-regular fa-clock"></i> ' + formatDate(post.published_at || post.created_at);
+                    imageEl.src = post.featured_image_url || 'images/post-1.jpg';
+                    imageEl.alt = post.title || '';
+                    contentEl.innerHTML = post.content || '';
+                })
+                .catch(function () {
+                    showNotFound();
+                });
+        })();
+    </script>
 </body>
 </html>

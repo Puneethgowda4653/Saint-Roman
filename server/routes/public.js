@@ -166,6 +166,36 @@ router.get('/categories', async (req, res) => {
   res.json({ categories: data });
 });
 
+// GET /api/public/blog-posts — published posts only, list view (no `content`, kept for the
+// single-post page below). Supports ?limit= (default 12, max 48) and ?offset= pagination.
+router.get('/blog-posts', async (req, res) => {
+  const { limit, offset } = req.query;
+  const pageLimit = Math.min(Number(limit) || 12, 48);
+  const pageOffset = Math.max(Number(offset) || 0, 0);
+
+  const { data, error, count } = await supabaseAdmin
+    .from('blog_posts')
+    .select('id, title, slug, excerpt, featured_image_url, published_at, created_at', { count: 'exact' })
+    .eq('status', 'published')
+    .order('published_at', { ascending: false })
+    .range(pageOffset, pageOffset + pageLimit - 1);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ posts: data, total: count ?? data.length });
+});
+
+router.get('/blog-posts/:slug', async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', req.params.slug)
+    .eq('status', 'published')
+    .single();
+
+  if (error) return res.status(404).json({ error: 'Post not found' });
+  res.json({ post: data });
+});
+
 router.get('/faqs', async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('faqs')
