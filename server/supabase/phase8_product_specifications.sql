@@ -1,0 +1,13 @@
+-- Ellora Admin — Phase 8 (Product Specifications / storefront "Additional Information")
+-- Run this in the Supabase SQL Editor after phase7_barcode_labels.sql.
+--
+-- Ellora sells multiple, very different categories (fashion, footwear, accessories, beauty), each
+-- with its own relevant spec attributes (a t-shirt has Fit/Neckline, a watch has Case
+-- Material/Water Resistance, a lipstick has Shade/Finish). Fixed columns like `material`/`fit`/
+-- `neckline` on `products` would only ever fit clothing and waste columns for everything else.
+-- JSONB matches how this schema already stores flexible/variable data elsewhere (orders.
+-- shipping_address, audit_logs.details, settings.payment_gateways) rather than introducing a new
+-- relational table, and — same as `tags` on this same table — it's one field on the existing
+-- product row, so it slots straight into the product form's single existing save payload
+-- (POST/PUT /api/products) instead of needing a separate save action or extra joins.
+alter table products add column if not exists specifications jsonb not null default '{}'::jsonb;

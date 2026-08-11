@@ -46,6 +46,11 @@ interface Variant {
   stock_quantity: number
 }
 
+interface Spec {
+  label: string
+  value: string
+}
+
 interface Product {
   id: string
   name: string
@@ -63,6 +68,7 @@ interface Product {
   category: Category | null
   product_variants: Variant[]
   tags: string[]
+  specifications: Record<string, string> | null
 }
 
 function slugify(value: string) {
@@ -95,6 +101,7 @@ export function ProductsPage() {
   const [status, setStatus] = useState<Product['status']>('draft')
   const [categoryId, setCategoryId] = useState<string>('')
   const [variants, setVariants] = useState<Variant[]>([{ ...emptyVariant }])
+  const [specs, setSpecs] = useState<Spec[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [newTagName, setNewTagName] = useState('')
   const [addingTag, setAddingTag] = useState(false)
@@ -136,12 +143,21 @@ export function ProductsPage() {
     setStatus('draft')
     setCategoryId('')
     setVariants([{ ...emptyVariant }])
+    setSpecs([])
     setSelectedTags([])
     setNewTagName('')
   }
 
   function updateVariant(index: number, patch: Partial<Variant>) {
     setVariants((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)))
+  }
+
+  function updateSpec(index: number, patch: Partial<Spec>) {
+    setSpecs((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)))
+  }
+
+  function removeSpec(index: number) {
+    setSpecs((prev) => prev.filter((_, i) => i !== index))
   }
 
   const visibleProducts = useMemo(() => {
@@ -250,6 +266,7 @@ export function ProductsPage() {
         : [{ ...emptyVariant }],
     )
     setSelectedTags(product.tags || [])
+    setSpecs(Object.entries(product.specifications || {}).map(([label, value]) => ({ label, value: String(value) })))
     setOpen(true)
   }
 
@@ -272,6 +289,9 @@ export function ProductsPage() {
         category_id: categoryId || null,
         tags: selectedTags,
         variants: variants.filter((v) => v.size || v.color),
+        specifications: Object.fromEntries(
+          specs.filter((s) => s.label.trim()).map((s) => [s.label.trim(), s.value]),
+        ),
       }
 
       if (editingId) {
@@ -478,6 +498,42 @@ export function ProductsPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
+              </div>
+
+              {/* ── Additional Information (storefront spec table) ── */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <Label>Additional Information</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSpecs((prev) => [...prev, { label: '', value: '' }])}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add specification
+                  </Button>
+                </div>
+                {specs.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No specifications added.</p>
+                )}
+                {specs.map((spec, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      placeholder="Label (e.g. Material)"
+                      value={spec.label}
+                      onChange={(e) => updateSpec(index, { label: e.target.value })}
+                    />
+                    <Input
+                      placeholder="Value (e.g. Cotton)"
+                      value={spec.value}
+                      onChange={(e) => updateSpec(index, { value: e.target.value })}
+                    />
+                    <Button type="button" variant="ghost" size="sm" onClick={() => removeSpec(index)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               </div>
 
               {/* ── Tags section ── */}

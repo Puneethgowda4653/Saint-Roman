@@ -11,12 +11,13 @@
 //      strip, matching how the rest of the storefront (products.html, homepage) already do it.
 //   2. Price used '$' + toFixed(2); now uses the shared EllroaCurrency.format() (js/currency.js).
 //   3. Description/Additional Information/Reviews tabs were the same static template copy on
-//      every product. Description now comes from products.description (real column). Additional
-//      Information pulls the real product-level fields that exist (brand, sku, barcode, hsn_code,
-//      gst_percent, category) — there is no material/fit/neckline/color column on `products` at
-//      all, so those are not fabricated; the tab honestly says so if nothing is set. There is no
-//      reviews table anywhere in server/supabase/*.sql, so Reviews honestly shows "No reviews
-//      yet" / "Reviews (0)" instead of 50 fake ones.
+//      every product. Description comes from products.description (real column). Additional
+//      Information comes from products.specifications (jsonb, phase8_product_specifications.sql)
+//      — a flexible label/value store filled in per-product via the admin's product form, since
+//      no category-agnostic fixed columns for this exist or make sense (a t-shirt's Fit/Neckline
+//      don't apply to a watch or a lipstick). Both tabs honestly say so if nothing is set. There
+//      is no reviews table anywhere in server/supabase/*.sql, so Reviews honestly shows "No
+//      reviews yet" / "Reviews (0)" instead of 50 fake ones.
 //   4. Related products reused the existing GET /products?category=<slug> endpoint (same one
 //      products.html uses for the main grid) instead of a new endpoint or fabricated data —
 //      fetches products in the same category, excludes the current product, and shows however
@@ -74,29 +75,27 @@
             : '<p>No description available yet.</p>';
     }
 
-    // Only real product-level columns (server/supabase/phase2_catalog.sql). There is no
-    // material/fit/neckline/single-color column on `products` — those were fabricated in the
-    // static template, so they are not reproduced here, real or fake.
+    // products.specifications (jsonb, server/supabase/phase8_product_specifications.sql) — a
+    // flexible label/value store filled in per-product from the admin's product edit form
+    // (admin/src/pages/ProductsPage.tsx "Additional Information" section), since fixed columns
+    // like material/fit/neckline only make sense for apparel and don't fit every category Ellora
+    // sells (watches, beauty, accessories, ...). Real data only — no fallback to fabricated rows.
     function renderAdditionalInfo(product) {
         var container = document.getElementById('product-additional-info');
         if (!container) return;
 
-        var rows = [
-            ['Brand', product.brand],
-            ['SKU', product.sku],
-            ['Barcode', product.barcode],
-            ['HSN Code', product.hsn_code],
-            ['GST', (product.gst_percent || product.gst_percent === 0) ? product.gst_percent + '%' : null],
-            ['Category', product.category ? product.category.name : null],
-        ].filter(function (row) { return row[1] !== null && row[1] !== undefined && row[1] !== ''; });
+        var specs = product.specifications || {};
+        var rows = Object.keys(specs).filter(function (label) {
+            return specs[label] !== null && specs[label] !== undefined && specs[label] !== '';
+        });
 
         if (rows.length === 0) {
             container.innerHTML = '<p>No additional information available.</p>';
             return;
         }
 
-        container.innerHTML = '<table>' + rows.map(function (row) {
-            return '<tr><td><b>' + escapeHtml(row[0]) + '</b></td><td>' + escapeHtml(row[1]) + '</td></tr>';
+        container.innerHTML = '<table>' + rows.map(function (label) {
+            return '<tr><td><b>' + escapeHtml(label) + '</b></td><td>' + escapeHtml(specs[label]) + '</td></tr>';
         }).join('') + '</table>';
     }
 

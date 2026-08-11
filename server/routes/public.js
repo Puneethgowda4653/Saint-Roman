@@ -151,7 +151,7 @@ router.get('/products/:slug', async (req, res) => {
   // still read it, but it's effectively always empty.
   const { data, error } = await supabaseAdmin
     .from('products')
-    .select('id, name, slug, description, image_url, base_price, compare_at_price, brand, sku, barcode, hsn_code, gst_percent, category:categories(id, name, slug), product_variants(id, size, color, price, stock_quantity), product_images(url, alt_text, position)')
+    .select('id, name, slug, description, image_url, base_price, compare_at_price, brand, sku, barcode, hsn_code, gst_percent, specifications, category:categories(id, name, slug), product_variants(id, size, color, price, stock_quantity), product_images(url, alt_text, position)')
     .eq('slug', req.params.slug)
     .eq('status', 'active')
     .single();
