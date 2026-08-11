@@ -333,47 +333,9 @@
                     <!-- Account Order Detail Box Start -->
                     <div class="view-order-content-box">
                         <!-- View Order Product Info Box Start -->
+                        <!-- Filled in live by js/account-order-details.js from server/routes/customer.js GET /orders/:id -->
                         <div class="view-order-product-info-box wow fadeInUp">
-                            <!-- Cart Item Header Start -->
-                            <div class="cart-item-header">
-                                <span class="product-header-tag">Product</span>
-                                <span class="quantity-header-tag">Quantity</span>
-                                <span class="subtotal-header-tag">Total</span>
-                            </div>
-                            <!-- Cart Item Header End -->
-
-                            <!-- Cart Item Start -->
-                            <div class="cart-item">
-                                <div class="cart-item-image-content">
-                                    <div class="cart-item-image">
-                                        <figure>
-                                            <img src="images/product-image-1.png" alt="">
-                                        </figure>
-                                    </div>
-                                    <div class="cart-item-info-content">
-                                        <div class="cart-item-title">
-                                            <p>Chic Aura Crop Top</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="cart-item-quantity-total">
-                                    <div class="cart-item-quantity">
-                                        <p>01</p>
-                                    </div>
-                                    <div class="cart-item-subtotal">
-                                        <p>₹35</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Cart Item End -->
-
-                            <ul class="view-order-product-info-list">
-                                <li>Subtotal: <span>₹35</span></li>
-                                <li>Shipping: <span>Free shipping</span></li>
-                                <li>Tax: <span>₹105</span></li>
-                                <li>Total: <span>₹140</span></li>
-                                <li>Payment metho: <span>Direct bank transfer</span></li>
-                            </ul>
+                            <p>Loading order&hellip;</p>
                         </div>
                         <!-- View Order Product Info Box End -->
 
@@ -382,22 +344,14 @@
                             <!-- View Order Address Item Start -->
                             <div class="view-order-address-item">
                                 <h2>Billing address</h2>
-                                <ul>
-                                    <li>Sophia Brown</li>
-                                    <li>221B Baker Street, Marylebone, London NW1 6XE, Green Park</li>
-                                    <li><a href="tel:997840329">(+1) 997 840 329</a> <a
-                                            href="mailto:infodomain@gmail.com">infodomain@gmail.com</a></li>
-                                </ul>
+                                <ul></ul>
                             </div>
                             <!-- View Order Address Item End -->
 
                             <!-- View Order Address Item Start -->
                             <div class="view-order-address-item">
                                 <h2>Shipping address</h2>
-                                <ul>
-                                    <li>Sophia Brown</li>
-                                    <li>221B Baker Street, Marylebone, London NW1 6XE, Green Park</li>
-                                </ul>
+                                <ul></ul>
                             </div>
                             <!-- View Order Address Item End -->
                         </div>
@@ -556,9 +510,10 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
+    <script src="js/currency.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/account-dashboard.js"></script> <!-- swap per page -->
+    <script src="js/account-order-details.js"></script> <!-- swap per page -->
 </body>
 
 </html>
