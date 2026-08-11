@@ -704,6 +704,7 @@
     <!-- Live cart rendering — see js/ellora-cart.js for storage, server/routes/public.js for checkout -->
     <script>
         (function () {
+            var API_BASE = 'http://localhost:4000/api/public';
             var container = document.getElementById('live-cart-items');
             var totalEl = document.getElementById('cart-total');
 
@@ -772,7 +773,82 @@
                 render();
             });
 
+            // "You May be interested:" was 3 hardcoded products (same on every visit, same
+            // broken placeholder images) regardless of cart contents. Cart line items only store
+            // variantId/productSlug/productName/variantLabel/price/quantity (see
+            // js/ellora-cart.js) — no category — so this reuses the same featured-products-with-
+            // newest-fallback query homepage-dynamic-sections.js's loadFeaturedProducts already
+            // uses, rather than adding new server logic, and just excludes whatever's already in
+            // the cart. Mutates the 3 existing cards in place (same pattern as
+            // product-single-dynamic.js's related products), hides any card beyond what's
+            // actually available, and hides the whole section if nothing is left to show.
+            function loadInterestedProducts() {
+                var section = document.querySelector('.interested-products-box');
+                var cards = document.querySelectorAll('.interested-products-box .product-item');
+                if (!section || !cards.length) return;
+
+                var cartSlugs = EllroaCart.get().map(function (i) { return i.productSlug; });
+                var fetchLimit = cards.length + cartSlugs.length;
+
+                function apply(products) {
+                    var filtered = products
+                        .filter(function (p) { return cartSlugs.indexOf(p.slug) === -1; })
+                        .slice(0, cards.length);
+
+                    if (filtered.length === 0) {
+                        section.style.display = 'none';
+                        return;
+                    }
+
+                    cards.forEach(function (card, i) {
+                        if (i >= filtered.length) {
+                            card.style.display = 'none';
+                            return;
+                        }
+                        var p = filtered[i];
+                        var href = 'product-single.html?slug=' + encodeURIComponent(p.slug);
+
+                        var img = card.querySelector('.product-item-image img');
+                        if (img) {
+                            img.src = p.image_url || 'images/product-image-1.png';
+                            img.alt = p.name || '';
+                        }
+                        var imgLink = card.querySelector('.product-item-image a');
+                        if (imgLink) imgLink.href = href;
+
+                        var title = card.querySelector('.product-item-title a');
+                        if (title) {
+                            title.textContent = p.name;
+                            title.href = href;
+                        }
+
+                        var priceEl = card.querySelector('.product-item-price h3');
+                        if (priceEl) {
+                            var html = EllroaCurrency.format(p.base_price);
+                            if (p.compare_at_price && p.compare_at_price > p.base_price) {
+                                html += ' <span>' + EllroaCurrency.format(p.compare_at_price) + '</span>';
+                            }
+                            priceEl.innerHTML = html;
+                        }
+                    });
+                }
+
+                fetch(API_BASE + '/products?tag=featured&limit=' + fetchLimit)
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        var products = data.products || [];
+                        if (products.length === 0) {
+                            return fetch(API_BASE + '/products?sort=newest&limit=' + fetchLimit)
+                                .then(function (res) { return res.json(); })
+                                .then(function (d2) { apply(d2.products || []); });
+                        }
+                        apply(products);
+                    })
+                    .catch(function () { section.style.display = 'none'; });
+            }
+
             render();
+            loadInterestedProducts();
         })();
     </script>
 </body>
