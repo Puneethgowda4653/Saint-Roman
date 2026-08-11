@@ -144,9 +144,14 @@ router.get('/facets', async (req, res) => {
 });
 
 router.get('/products/:slug', async (req, res) => {
+  // image_url was missing here — the storefront's own list endpoint (GET /products above)
+  // selects it, but this single-product lookup only ever selected the `product_images` gallery
+  // table, which nothing in the codebase writes to (admin's ProductsPage.tsx image upload writes
+  // to products.image_url directly). Left product_images in the select since existing callers may
+  // still read it, but it's effectively always empty.
   const { data, error } = await supabaseAdmin
     .from('products')
-    .select('id, name, slug, description, base_price, compare_at_price, category:categories(id, name, slug), product_variants(id, size, color, price, stock_quantity), product_images(url, alt_text, position)')
+    .select('id, name, slug, description, image_url, base_price, compare_at_price, brand, sku, barcode, hsn_code, gst_percent, category:categories(id, name, slug), product_variants(id, size, color, price, stock_quantity), product_images(url, alt_text, position)')
     .eq('slug', req.params.slug)
     .eq('status', 'active')
     .single();

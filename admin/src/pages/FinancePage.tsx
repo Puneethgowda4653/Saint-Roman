@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useApiResource } from '@/hooks/useSupabase'
+import { formatCurrency } from '@/lib/currency'
 
 interface Summary {
   totalRevenue: number
@@ -23,10 +24,6 @@ function StatCard({ label, value }: { label: string; value: string }) {
       </CardContent>
     </Card>
   )
-}
-
-function formatCurrency(value: number) {
-  return `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
 export function FinancePage() {

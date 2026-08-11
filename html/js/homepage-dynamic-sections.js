@@ -26,9 +26,8 @@
         });
     }
 
-    function formatPrice(n) {
-        return '\u20B9' + Number(n).toLocaleString('en-IN');
-    }
+    // See js/currency.js - EllroaCurrency.format() is the single shared price formatter.
+    var formatPrice = EllroaCurrency.format;
 
     function discountPercent(base, compare) {
         if (!compare || compare <= base) return 0;

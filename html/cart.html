@@ -389,7 +389,7 @@
 
                                         <!-- Product Item Price Start -->
                                         <div class="product-item-price">
-                                            <h3>$35.00 <span>$40.00</span></h3>
+                                            <h3>₹35 <span>₹40</span></h3>
                                         </div>
                                         <!-- Product Item Price End -->
                                     </div>
@@ -445,7 +445,7 @@
 
                                         <!-- Product Item Price Start -->
                                         <div class="product-item-price">
-                                            <h3>$35.00 <span>$40.00</span></h3>
+                                            <h3>₹35 <span>₹40</span></h3>
                                         </div>
                                         <!-- Product Item Price End -->
                                     </div>
@@ -501,7 +501,7 @@
 
                                         <!-- Product Item Price Start -->
                                         <div class="product-item-price">
-                                            <h3>$35.00 <span>$40.00</span></h3>
+                                            <h3>₹35 <span>₹40</span></h3>
                                         </div>
                                         <!-- Product Item Price End -->
                                     </div>
@@ -531,7 +531,7 @@
                                 </div>
                                 <div class="order-summary-total">
                                     <h3>Total</h3>
-                                    <h3 id="cart-total">$0.00</h3>
+                                    <h3 id="cart-total">₹0</h3>
                                 </div>
                             </div>
                             <!-- Order Summary Content Box End -->
@@ -697,6 +697,7 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
+    <script src="js/currency.js"></script>
     <script src="js/ellora-cart.js"></script>
     <script src="js/mega-menu-dynamic.js"></script>
 
@@ -711,19 +712,19 @@
 
                 if (items.length === 0) {
                     container.innerHTML = '<p>Your cart is empty. <a href="products.html">Browse products</a>.</p>';
-                    totalEl.textContent = '$0.00';
+                    totalEl.textContent = EllroaCurrency.format(0);
                     return;
                 }
 
                 container.innerHTML = items.map(function (item) {
-                    var subtotal = (item.price * item.quantity).toFixed(2);
+                    var subtotal = item.price * item.quantity;
                     return (
                         '<div class="cart-item" data-variant-id="' + item.variantId + '">' +
                         '  <div class="cart-item-image-content">' +
                         '    <div class="cart-item-image"><figure><img src="images/product-image-1.png" alt=""></figure></div>' +
                         '    <div class="cart-item-info-content">' +
                         '      <div class="cart-item-title"><p>' + item.productName + (item.variantLabel ? ' (' + item.variantLabel + ')' : '') + '</p></div>' +
-                        '      <div class="cart-item-price"><p>$' + Number(item.price).toFixed(2) + '</p></div>' +
+                        '      <div class="cart-item-price"><p>' + EllroaCurrency.format(item.price) + '</p></div>' +
                         '    </div>' +
                         '  </div>' +
                         '  <div class="cart-item-quantity-total">' +
@@ -734,14 +735,14 @@
                         '        <button type="button" class="qty-btn plus" data-action="increase"><span>+</span></button>' +
                         '      </div>' +
                         '    </div>' +
-                        '    <div class="cart-item-subtotal"><p>$' + subtotal + '</p></div>' +
+                        '    <div class="cart-item-subtotal"><p>' + EllroaCurrency.format(subtotal) + '</p></div>' +
                         '    <a href="#" class="cart-item-remove" data-action="remove">Remove</a>' +
                         '  </div>' +
                         '</div>'
                     );
                 }).join('');
 
-                totalEl.textContent = '$' + EllroaCart.subtotal().toFixed(2);
+                totalEl.textContent = EllroaCurrency.format(EllroaCart.subtotal());
             }
 
             container.addEventListener('click', function (e) {

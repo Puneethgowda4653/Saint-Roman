@@ -38,10 +38,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (item.compare_at_price && item.compare_at_price > item.base_price) {
                 var discount = Math.round((1 - item.base_price / item.compare_at_price) * 100);
                 priceHtml =
-                    '<p><span>₹' + Number(item.compare_at_price).toFixed(0) + '</span> ₹' + Number(item.base_price).toFixed(0) + '</p>' +
+                    '<p><span>' + EllroaCurrency.format(item.compare_at_price) + '</span> ' + EllroaCurrency.format(item.base_price) + '</p>' +
                     '<p>' + discount + '% OFF</p>';
             } else {
-                priceHtml = '<p>₹' + Number(item.base_price).toFixed(0) + '</p>';
+                priceHtml = '<p>' + EllroaCurrency.format(item.base_price) + '</p>';
             }
 
             var stockHtml = item.status === 'active'

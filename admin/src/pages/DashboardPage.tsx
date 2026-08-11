@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useApiResource } from '@/hooks/useSupabase'
+import { formatCurrency } from '@/lib/currency'
 import { GripVertical, Eye, EyeOff, Settings2 } from 'lucide-react'
 
 interface RecentOrder {
@@ -30,10 +31,6 @@ interface Summary {
   ordersByStatus: Record<string, number>
   lowStockVariants: LowStockVariant[]
   recentOrders: RecentOrder[]
-}
-
-function formatCurrency(value: number) {
-  return `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
 function StatCard({ label, value }: { label: string; value: string }) {

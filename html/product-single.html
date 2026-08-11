@@ -341,7 +341,7 @@
 
                                 <!-- Product Single Price Start -->
                                 <div class="product-single-price wow fadeInUp" data-wow-delay="0.2s">
-                                    <h2 id="product-price">$35.00 <sub>$40.00</sub></h2>
+                                    <h2 id="product-price">₹35 <sub>₹40</sub></h2>
                                     <span>Inclusive of all taxes*</span>
                                 </div>
                                 <!-- Product Single Price End -->
@@ -446,7 +446,7 @@
                                             <button class="nav-link" id="second-tab" data-bs-toggle="tab" data-bs-target="#second" type="button" role="tab" aria-controls="second" aria-selected="false">Additional Information</button>
                                         </li>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="third-tab" data-bs-toggle="tab" data-bs-target="#third" type="button" role="tab" aria-controls="third" aria-selected="false">Reviews (50)</button>
+                                            <button class="nav-link" id="third-tab" data-bs-toggle="tab" data-bs-target="#third" type="button" role="tab" aria-controls="third" aria-selected="false">Reviews (0)</button>
                                         </li>
                                     </ul>
                                 </div>
@@ -454,14 +454,8 @@
                                 
                                 <!-- Product Tab Item Box Start -->
                                 <div class="product-tab-item-box tab-pane fade show active" id="first" role="tabpanel">
-                                    <div class="product-tab-item-content">
-                                        <p>Crafted from soft, breathable, and lightweight fabric, the Chic Aura Crop Top offers all-day comfort while keeping you cool and confident. Its versatile design pairs beautifully with high-waisted jeans, skirts, shorts, joggers, or layered under jackets and blazers for a more elevated fashion statement.</p>
-                                        <p>The clean finish, trendy cropped length, and fashionable fit make it ideal for creating both relaxed and bold looks. Whether you prefer a sporty vibe, classy street style, or a soft feminine aesthetic, the Chic Aura Crop Top adapts effortlessly to your personal style. Pair it with sneakers for an everyday casual outfit or accessorize it with layered jewelry and heels for a more stylish and confident appearance.</p>
-                                        <ul>
-                                            <li>Crafted with soft, breathable, and lightweight fabric that provides exceptional comfort throughout the day while keeping</li>
-                                            <li>Designed with a flattering modern fit that enhances your natural silhouette, giving you a confident and fashionable look perfect</li>
-                                            <li>Features a trendy cropped length and contemporary style that effortlessly blends modern streetwear fashion with timeless</li>
-                                        </ul>
+                                    <div class="product-tab-item-content" id="product-description-tab">
+                                        <p>Loading&hellip;</p>
                                     </div>
                                 </div>
                                 <!-- Product Tab Item End -->
@@ -476,23 +470,10 @@
                                         <!-- Product Additional Content Title End -->
 
                                         <!-- Product Additional Info Table Start -->
-                                        <div class="product-additional-info-table">
+                                        <div class="product-additional-info-table" id="product-additional-info">
                                             <table>
                                                 <tr>
-                                                    <td><b>Color</b></td>
-                                                    <td>Ivory Cream</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><b>Material</b></td>
-                                                    <td>92% Polyester, 8% Spandex</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><b>Fit</b></td>
-                                                    <td>Slim Fit</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><b>Neckline</b></td>
-                                                    <td>Square Neck</td>
+                                                    <td colspan="2">Loading&hellip;</td>
                                                 </tr>
                                             </table>
                                         </div>
@@ -505,48 +486,12 @@
                                 <div class="product-tab-item-box tab-pane fade" id="third" role="tabpanel">
                                     <div class="product-review-from-content">
                                         <!-- Customer Review List Start -->
-                                        <div class="customer-review-list">
-                                            <!-- Customer Review Item Start -->
-                                            <div class="customer-review-item">
-                                                <div class="icon-box">
-                                                    <img src="images/author-1.jpg" alt="">
-                                                </div>
-                                                <div class="customer-review-item-body">
-                                                    <div class="customer-review-item-content">
-                                                        <p><span>Author</span> - Aug 12, 2025</p>
-                                                        <p>Classic Silver Dial Stainless.</p>
-                                                    </div>
-                                                    <div class="customer-review-item-rating">
-                                                        <i class="fa-solid fa-star"></i>
-                                                        <i class="fa-solid fa-star"></i>
-                                                        <i class="fa-solid fa-star"></i>
-                                                        <i class="fa-solid fa-star"></i>
-                                                        <i class="fa-solid fa-star"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- Customer Review Item End -->
-
-                                            <!-- Customer Review Item Start -->
-                                            <div class="customer-review-item">
-                                                <div class="icon-box">
-                                                    <img src="images/author-2.jpg" alt="">
-                                                </div>
-                                                <div class="customer-review-item-body">
-                                                    <div class="customer-review-item-content">
-                                                        <p>Author - Aug 15, 2025</p>
-                                                        <p>Lightweight slim with a durable</p>
-                                                    </div>
-                                                    <div class="customer-review-item-rating">
-                                                        <i class="fa-solid fa-star"></i>
-                                                        <i class="fa-solid fa-star"></i>
-                                                        <i class="fa-solid fa-star"></i>
-                                                        <i class="fa-solid fa-star"></i>
-                                                        <i class="fa-solid fa-star"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- Customer Review Item End -->
+                                        <!-- No reviews table/feature exists yet in the DB (server/supabase/*.sql) —
+                                             product-single.html previously showed the same 2 fake reviews on
+                                             every product regardless of which one was open. This now shows an
+                                             honest empty state until a real reviews feature is built. -->
+                                        <div class="customer-review-list" id="product-reviews-list">
+                                            <p>No reviews yet.</p>
                                         </div>
                                         <!-- Customer Review List End -->
 
@@ -665,7 +610,7 @@
         
                                 <!-- Product Item Price Start -->
                                 <div class="product-item-price">
-                                    <h3>$35.00 <span>$40.00</span></h3>
+                                    <h3>₹35 <span>₹40</span></h3>
                                 </div>
                                 <!-- Product Item Price End -->
                             </div>
@@ -718,7 +663,7 @@
         
                                 <!-- Product Item Price Start -->
                                 <div class="product-item-price">
-                                    <h3>$35.00 <span>$40.00</span></h3>
+                                    <h3>₹35 <span>₹40</span></h3>
                                 </div>
                                 <!-- Product Item Price End -->
                             </div>
@@ -771,7 +716,7 @@
         
                                 <!-- Product Item Price Start -->
                                 <div class="product-item-price">
-                                    <h3>$35.00 <span>$40.00</span></h3>
+                                    <h3>₹35 <span>₹40</span></h3>
                                 </div>
                                 <!-- Product Item Price End -->
                             </div>
@@ -824,7 +769,7 @@
         
                                 <!-- Product Item Price Start -->
                                 <div class="product-item-price">
-                                    <h3>$35.00 <span>$40.00</span></h3>
+                                    <h3>₹35 <span>₹40</span></h3>
                                 </div>
                                 <!-- Product Item Price End -->
                             </div>
@@ -1095,71 +1040,10 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
+    <script src="js/currency.js"></script>
     <script src="js/ellora-cart.js"></script>
 
     <!-- Live product data from the Ellora admin panel (server/routes/public.js) -->
-    <!-- First-pass scope: title, description, price, SKU/category text, add-to-cart. Images,
-         size/color swatches (still cosmetic, not tied to a specific variant), reviews, and
-         related products are still static demo content — not wired yet. -->
-    <script>
-        (function () {
-            var API_BASE = 'http://localhost:4000/api/public';
-            var slug = new URLSearchParams(window.location.search).get('slug');
-            var currentProduct = null;
-
-            document.getElementById('add-to-cart-btn').addEventListener('click', function (e) {
-                e.preventDefault();
-                if (!currentProduct) return;
-
-                var variant = currentProduct.product_variants && currentProduct.product_variants[0];
-                if (!variant) {
-                    alert('This product has no purchasable variant yet.');
-                    return;
-                }
-
-                var qty = parseInt(document.getElementById('product-qty').value, 10) || 1;
-
-                EllroaCart.add({
-                    variantId: variant.id,
-                    productSlug: currentProduct.slug,
-                    productName: currentProduct.name,
-                    variantLabel: [variant.size, variant.color].filter(Boolean).join(' / ') || null,
-                    price: variant.price,
-                    quantity: qty,
-                });
-
-                window.location.href = 'cart.html';
-            });
-
-            if (!slug) return;
-
-            fetch(API_BASE + '/products/' + encodeURIComponent(slug))
-                .then(function (res) {
-                    if (!res.ok) throw new Error('Product not found');
-                    return res.json();
-                })
-                .then(function (data) {
-                    var product = data.product;
-                    currentProduct = product;
-                    var price = Number(product.base_price).toFixed(2);
-                    var compareAt = product.compare_at_price
-                        ? '<sub>$' + Number(product.compare_at_price).toFixed(2) + '</sub>'
-                        : '';
-
-                    document.title = product.name + ' - Ellora';
-                    document.getElementById('product-breadcrumb').textContent = product.name;
-                    document.getElementById('product-title').textContent = product.name;
-                    document.getElementById('product-category').textContent = product.category ? product.category.name : '';
-                    document.getElementById('product-description').textContent = product.description || '';
-                    document.getElementById('product-price').innerHTML = '$' + price + ' ' + compareAt;
-                    document.getElementById('product-sku').textContent = product.slug;
-                    document.getElementById('product-categories-detail').textContent = product.category ? product.category.name : 'Uncategorized';
-                })
-                .catch(function () {
-                    document.getElementById('product-title').textContent = 'Product not found';
-                    document.getElementById('product-description').textContent = 'This product could not be found.';
-                });
-        })();
-    </script>
+    <script src="js/product-single-dynamic.js"></script>
 </body>
 </html>

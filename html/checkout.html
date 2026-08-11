@@ -460,14 +460,14 @@
                                         <!-- All Product Total List Start -->
                                         <div class="all-product-total-list">
                                             <div class="all-product-total">
-                                                <p>Subtotal <span id="checkout-subtotal">$0.00</span></p>
+                                                <p>Subtotal <span id="checkout-subtotal">₹0</span></p>
                                             </div>
                                             <div class="all-product-total" id="checkout-discount-row"
                                                 style="display:none;">
-                                                <p>Discount <span id="checkout-discount">-$0.00</span></p>
+                                                <p>Discount <span id="checkout-discount">-₹0</span></p>
                                             </div>
                                             <div class="all-product-total">
-                                                <p>Total <span id="checkout-total">$0.00</span></p>
+                                                <p>Total <span id="checkout-total">₹0</span></p>
                                             </div>
                                         </div>
                                         <!-- All Product Total List End -->
@@ -657,6 +657,7 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
+    <script src="js/currency.js"></script>
     <script src="js/ellora-cart.js"></script>
     <script src="js/checkout-coupon-autoapply.js"></script>
     <script src="js/mega-menu-dynamic.js"></script>
@@ -680,28 +681,28 @@
             function renderSummary() {
                 var items = EllroaCart.get();
                 itemsContainer.innerHTML = items.map(function (item) {
-                    var subtotal = (item.price * item.quantity).toFixed(2);
+                    var subtotal = item.price * item.quantity;
                     return (
                         '<div class="product-total-item">' +
                         '  <div class="product-total-item-header">' +
                         '    <div class="product-total-item-image"><figure><img src="images/product-image-1.png" alt=""></figure></div>' +
                         '    <div class="product-total-item-title"><p>' + item.productName + (item.variantLabel ? ' (' + item.variantLabel + ')' : '') + ' &times; ' + item.quantity + '</p></div>' +
                         '  </div>' +
-                        '  <div class="product-total-item-subtotal"><p>$' + subtotal + '</p></div>' +
+                        '  <div class="product-total-item-subtotal"><p>' + EllroaCurrency.format(subtotal) + '</p></div>' +
                         '</div>'
                     );
                 }).join('');
 
                 var subtotal = EllroaCart.subtotal();
                 var discount = appliedCoupon ? appliedCoupon.discount : 0;
-                subtotalEl.textContent = '$' + subtotal.toFixed(2);
+                subtotalEl.textContent = EllroaCurrency.format(subtotal);
                 if (discount > 0) {
                     discountRow.style.display = '';
-                    discountEl.textContent = '-$' + discount.toFixed(2);
+                    discountEl.textContent = '-' + EllroaCurrency.format(discount);
                 } else {
                     discountRow.style.display = 'none';
                 }
-                totalEl.textContent = '$' + Math.max(0, subtotal - discount).toFixed(2);
+                totalEl.textContent = EllroaCurrency.format(Math.max(0, subtotal - discount));
             }
 
             function showMessage(text, isError) {

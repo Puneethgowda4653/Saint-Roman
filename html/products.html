@@ -550,9 +550,9 @@
                                     }
 
                                     function productCard(product) {
-                                        var price = '\u20B9' + Number(product.base_price).toLocaleString('en-IN');
+                                        var price = EllroaCurrency.format(product.base_price);
                                         var compareAt = product.compare_at_price
-                                            ? '<span>\u20B9' + Number(product.compare_at_price).toLocaleString('en-IN') + '</span>'
+                                            ? '<span>' + EllroaCurrency.format(product.compare_at_price) + '</span>'
                                             : '';
                                         var detailUrl = 'product-single.html?slug=' + encodeURIComponent(product.slug);
                                         var imgSrc = product.image_url || 'images/product-image-1.png';
@@ -821,6 +821,7 @@
         <script src="js/jquery.mb.YTPlayer.min.js"></script>
         <script src="js/wow.min.js"></script>
         <script src="js/function.js"></script>
+        <script src="js/currency.js"></script>
         <script src="js/products-hero-dynamic.js"></script>
         <script src="js/mega-menu-dynamic.js"></script>
 </body>
