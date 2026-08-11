@@ -363,20 +363,44 @@ router.post('/orders', async (req, res) => {
 
   const total = Math.max(0, subtotal - discountAmount);
 
-  // --- Customer upsert (by phone, since we don't have auth) ---
+  // --- Customer upsert ---
+  // customers.email has a partial unique index (phase4_customers.sql: `where email is not null`)
+  // — phone has NO unique constraint at all. Looking up "existing customer" by phone only (the
+  // previous version of this block) can miss a real match (phone isn't guaranteed unique, so a
+  // phone-only .maybeSingle() errors out silently if more than one row shares that phone number,
+  // e.g. from earlier retried checkouts) and then collide on the email constraint when it falls
+  // through to insert — exactly the "duplicate key value violates unique constraint
+  // 'customers_email_idx'" this caused. checkout.html requires an email, so the normal path
+  // upserts directly against that real constraint (atomic — no separate select-then-insert
+  // race). Only falls back to a phone-based best-effort lookup if email is missing (the server
+  // itself doesn't require it — see the validation above), since there's nothing unique to
+  // upsert against in that case.
   let customerId = null;
   {
-    const { data: existingCustomer } = await supabaseAdmin.from('customers').select('id').eq('phone', customer_phone).maybeSingle();
-    if (existingCustomer) {
-      customerId = existingCustomer.id;
-    } else {
-      const { data: newCustomer, error: customerError } = await supabaseAdmin
+    if (customer_email) {
+      const { data: customer, error: customerError } = await supabaseAdmin
         .from('customers')
-        .insert({ name: customer_name, email: customer_email || null, phone: customer_phone, address: shipping_address || null })
+        .upsert(
+          { name: customer_name, email: customer_email, phone: customer_phone, address: shipping_address || null },
+          { onConflict: 'email' }
+        )
         .select('id')
         .single();
       if (customerError) return res.status(500).json({ error: customerError.message });
-      customerId = newCustomer.id;
+      customerId = customer.id;
+    } else {
+      const { data: existingCustomer } = await supabaseAdmin.from('customers').select('id').eq('phone', customer_phone).limit(1).maybeSingle();
+      if (existingCustomer) {
+        customerId = existingCustomer.id;
+      } else {
+        const { data: newCustomer, error: customerError } = await supabaseAdmin
+          .from('customers')
+          .insert({ name: customer_name, email: null, phone: customer_phone, address: shipping_address || null })
+          .select('id')
+          .single();
+        if (customerError) return res.status(500).json({ error: customerError.message });
+        customerId = newCustomer.id;
+      }
     }
   }
 
