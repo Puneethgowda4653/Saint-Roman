@@ -482,56 +482,6 @@
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
     <script src="js/mega-menu-dynamic.js"></script>
-
-    <!-- Live blog post from the Ellora admin panel (server/routes/public.js) -->
-    <script>
-        (function () {
-            var API_BASE = 'http://localhost:4000/api/public';
-            var params = new URLSearchParams(window.location.search);
-            var slug = params.get('slug');
-
-            var titleEl = document.getElementById('blog-post-title');
-            var dateEl = document.getElementById('blog-post-date');
-            var imageEl = document.getElementById('blog-post-image');
-            var contentEl = document.getElementById('blog-post-content');
-
-            function formatDate(value) {
-                if (!value) return '';
-                var d = new Date(value);
-                if (isNaN(d.getTime())) return '';
-                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            }
-
-            function showNotFound() {
-                titleEl.textContent = 'Post not found';
-                document.title = 'Post not found - Ellora';
-                dateEl.innerHTML = '';
-                contentEl.innerHTML = '<p>Sorry, we couldn\'t find that blog post.</p>';
-            }
-
-            if (!slug) {
-                showNotFound();
-                return;
-            }
-
-            fetch(API_BASE + '/blog-posts/' + encodeURIComponent(slug))
-                .then(function (res) {
-                    if (!res.ok) throw new Error('not found');
-                    return res.json();
-                })
-                .then(function (data) {
-                    var post = data.post;
-                    titleEl.textContent = post.title;
-                    document.title = post.title + ' - Ellora - Fashion & Lifestyle Store eCommerce HTML Template';
-                    dateEl.innerHTML = '<i class="fa-regular fa-clock"></i> ' + formatDate(post.published_at || post.created_at);
-                    imageEl.src = post.featured_image_url || 'images/post-1.jpg';
-                    imageEl.alt = post.title || '';
-                    contentEl.innerHTML = post.content || '';
-                })
-                .catch(function () {
-                    showNotFound();
-                });
-        })();
-    </script>
+    <script src="js/blog-single-dynamic.js"></script>
 </body>
 </html>
