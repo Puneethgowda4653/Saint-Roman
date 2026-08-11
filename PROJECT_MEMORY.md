@@ -1,6 +1,10 @@
 # 🧠 ELLORA PROJECT MEMORY
-> Last Updated: August 9, 2026
+> Last Updated: August 11, 2026
 > Read this file at the start of every conversation to understand project context.
+> **Standing rule**: update this file after every meaningful change (not just at session end) —
+> add what changed, why, and what's still not built, the same level of detail as existing entries.
+> Don't leave it to go stale, and don't leave a superseded note uncorrected (see html/ note below —
+> it was wrong for months before anyone fixed it).
 
 ---
 
@@ -102,6 +106,24 @@ npm run dev:admin   # admin panel only -> http://localhost:5173
 - **Scanner & Renderer Components**: Created a barcode scanner page [BarcodeScannerPage.tsx](file:///c:/Users/ADMIN/Downloads/Saint-Roman/admin/src/pages/BarcodeScannerPage.tsx) and inline renderer [BarcodeSvg.tsx](file:///c:/Users/ADMIN/Downloads/Saint-Roman/admin/src/components/shared/BarcodeSvg.tsx) using the `JsBarcode` framework.
 - **Label Printer Utility**: Developed [barcodePrint.ts](file:///c:/Users/ADMIN/Downloads/Saint-Roman/admin/src/lib/barcodePrint.ts) to construct and prompt printable barcode layouts within separate web context windows.
 - **Backfill Script**: Provided a command line script [backfill-barcodes.js](file:///c:/Users/ADMIN/Downloads/Saint-Roman/server/scripts/backfill-barcodes.js) to retroactively populate missing barcodes for historical products.
+
+### 8. Storefront Polish & Blog Wiring (Done ✅ — 2026-08-11, branch `claude/project-review-changes-yjarew`, not yet merged to `main`)
+- **Account sidebar**: removed/commented out the "Downloads" link from the account sidebar `<ul>` across all 8 `account-*.html` pages (digital-downloads isn't a real feature here — physical fashion/lifestyle store).
+- **Blog wired to real data end-to-end**:
+  - `admin/src/pages/BlogPostsPage.tsx` — added featured-image upload (reuses the existing `ImageUpload`/Cloudinary flow), thumbnail column in the posts table.
+  - `server/routes/public.js` — new `GET /api/public/blog-posts` (published-only, paginated) and `GET /api/public/blog-posts/:slug` (full post).
+  - `server/routes/cms.js` — auto-dedupes `blog_posts.slug` on create/update (appends `-2`, `-3`, ...) instead of raw-erroring on `blog_posts_slug_key` when two posts share a title.
+  - `html/blog.html` — hidden-template-card + fetch pattern, replaces the 6 hardcoded posts.
+  - `html/blog-single.html` / new `html/js/blog-single-dynamic.js` — fetches by `?slug=`, renders title/date/image/content. Plain-text `content` (admin's Content field is a plain `<Textarea>`, no rich text) is reformatted into real `<p>`/`<ul><li>` blocks instead of one run-on paragraph. **Real bug fixed**: the theme's `.text-anime-style-3` heading-reveal animation (`js/function.js`) splits+animates whatever text is in the `<h1>` on page load; calling `SplitText.revert()` *after* writing the real title silently reverted it back to the static placeholder — fixed the ordering (revert → set real text → re-split/animate).
+  - Homepage "Follow us for daily style" section: consolidated into `html/js/homepage-dynamic-sections.js` (`loadBlogPosts()`) instead of its own duplicate inline `fetch`, matching every other section in that file (categories, new arrivals, offers, featured products, collections, promo banners).
+- **Header nav reordered** across all 28 `html/*.html` pages: `Home, Shop, Pages, Contact Us, My Account` — Blog is no longer top-level, it's the first item inside the Pages dropdown.
+- **`product-single.html` fixed** (was still 100% static demo content behind a live title/price/description fetch):
+  - **Image**: `GET /api/public/products/:slug` was selecting the unused `product_images` gallery table instead of `products.image_url` (the column the admin's image upload actually writes to, added in `phase6_banner_image.sql`) — added it to the select. One image per product (no real gallery), applied to every slide in both the main slider and thumbnail strip.
+  - **Currency**: was `'$' + toFixed(2)` here while `products.html` correctly used `₹`. New shared `html/js/currency.js` (`EllroaCurrency.format`) — wired into product-single, cart, checkout, `account-wishlist.js`, `account-orders.js`, `homepage-dynamic-sections.js`, `products.html` (was 5+ independent copies/hand-rolled `$`). Admin side was already correct ₹ everywhere; deduped its one real copy-paste (`formatCurrency` in `DashboardPage.tsx` + `FinancePage.tsx`) into `admin/src/lib/currency.ts`.
+  - **Description/Additional Information/Reviews tabs** were the same static "Chic Aura Crop Top" copy on every product regardless of which one was open. Description now renders `products.description` (real column, honest "No description available yet." if empty). Reviews honestly shows "No reviews yet" / "Reviews (0)" — **no reviews table exists anywhere in the schema**, so this was fake data with no backing feature; not rebuilt, just made honest.
+  - **Related products**: were 4 hardcoded products on every page. Now reuses the existing `GET /products?category=<slug>` endpoint (same one `products.html`'s main grid uses) — same category as the current product, excludes itself, shows however many are actually available (0–4). No new endpoint needed.
+  - Extracted the inline `<script>` into `html/js/product-single-dynamic.js`, matching the project's dynamic-page convention (`blog-single-dynamic.js`, `mega-menu-dynamic.js`, `homepage-dynamic-sections.js`).
+- **New: Product Specifications** (`products.specifications jsonb`, `server/supabase/phase8_product_specifications.sql`, registered in `server/scripts/migrate.js`) — the real backing field for the storefront's "Additional Information" tab. JSONB chosen over fixed columns (material/fit/neckline only fit apparel; Ellora also sells watches/beauty/accessories with different attributes) or a separate table, matching existing JSONB precedent in this schema (`orders.shipping_address`, `audit_logs.details`, `settings.payment_gateways`) and, like `tags`, slotting into the product form's *existing* single save payload. Admin: new "Additional Information" add/remove label-value row section in `ProductsPage.tsx`'s edit form, right under Description. Storefront: `product-single-dynamic.js` renders the real pairs or "No additional information available" if none are set. **Not yet run against the live Supabase instance from this session** — needs `npm run migrate` (or the SQL Editor) before it'll actually work.
 
 ---
 
@@ -285,9 +307,9 @@ Key tables currently deployed:
 1. `profiles` — Admin users with roles (admin, manager, warehouse, marketing, finance, support, vendor).
 2. `settings` — Global configuration, announcement parameters, and maintenance mode status.
 3. `categories` — Parent-child hierarchical database tags.
-4. `products` — Base catalog descriptions including SKU, barcode, cost price, base price, brand, HSN, and GST%.
+4. `products` — Base catalog descriptions including SKU, barcode, cost price, base price, brand, HSN, GST%, `image_url` (the real single product image, added `phase6_banner_image.sql`), and `specifications` jsonb (added `phase8_product_specifications.sql` — label/value pairs for the storefront's Additional Information tab, e.g. `{"Material": "Cotton", "Fit": "Regular Fit"}`).
 5. `product_variants` — Product attribute sets containing specific size, color, stock, and pricing increments.
-6. `product_images` — Image path lookup keys.
+6. `product_images` — **Legacy/unused.** Nothing in the codebase (admin or server) ever inserts into this table — the admin's image upload writes straight to `products.image_url` instead. `GET /api/public/products/:slug` still selects it (harmless, always empty) but don't build anything new against it; use `products.image_url`.
 7. `inventory_adjustments` — Variant adjustments log storing reasons (damages, count, purchase, returns).
 8. `orders` — Store customer transactions mapped through statuses (pending, processing, shipping, completed, refunded).
 9. `order_items` — Line items referencing individual variants.
@@ -323,31 +345,31 @@ Key tables currently deployed:
 
 ## 📝 IMPORTANT NOTES
 
-1. The `html/` folder is the ORIGINAL template — never modify it, keep as reference
+1. ~~The `html/` folder is the ORIGINAL template — never modify it, keep as reference~~ **Stale — this stopped being true a while ago and nobody had corrected it.** `html/` is the actively-developed storefront source (served by `npm run dev` / browser-sync at `:3000`); most pages are wired to live data via inline `<script>` blocks and/or dedicated `html/js/*-dynamic.js` files (`mega-menu-dynamic.js`, `homepage-dynamic-sections.js`, `blog-single-dynamic.js`, `product-single-dynamic.js`, `products-hero-dynamic.js`, `currency.js`, `ellora-cart.js`, `auth.js`, `account-*.js`, ...). `dist/` is the separate compiled/minified build output (via `scripts/build-html.js`) — that's the one to leave alone and regenerate, not hand-edit.
 2. Supabase project is created and connected (see NEXT ACTION) — no need to create another
 3. User needs a **Cloudinary account** at https://cloudinary.com (free tier) — still not set up, needed once product image upload is built
 4. Reference docs are in project root: `Building a production Admin Panel.docx` (the real phased build spec) and `Required key components in Admin panel.docx` (flat 25-module feature checklist)
 5. **Ignore** `Ellora_Backend_Architecture_Report.docx`/`.pdf` (there's a `.pdf` copy directly in `C:\Users\DELL-G3 15-3500\Downloads\`, outside this project folder) — it documents a completely different, abandoned Express+EJS+SQLite architecture from before the Supabase/React pivot. Confirmed stale 2026-07-21.
 6. Admin panel should feel premium — dark sidebar, clean forms, Shadcn/ui components
-7. **Git**: project now has its own repo, scoped to this folder — pushed to `https://github.com/Puneethgowda4653/Saint-Roman` on branch `main`. Still avoid `git add -A`/`git add .` from the home directory (`C:\Users\DELL-G3 15-3500`) — that separate, unrelated repo still exists at home and is a different concern.
+7. **Git**: project now has its own repo, scoped to this folder — pushed to `https://github.com/Puneethgowda4653/Saint-Roman`. Still avoid `git add -A`/`git add .` from the home directory (`C:\Users\DELL-G3 15-3500`) — that separate, unrelated repo still exists at home and is a different concern.
+8. **Active branch (as of 2026-08-11)**: recent work (section 8 above — Downloads sidebar, blog wiring, nav reorder, product-single.html fixes, product specifications) is on `claude/project-review-changes-yjarew`, **not yet merged to `main`**. Check which branch you're actually running before assuming a fix described here is live locally — `git checkout claude/project-review-changes-yjarew && git pull` to get it.
 
 ---
 
 ## 🚀 NEXT ACTION
 
-**As of August 9, 2026: Storefront Customer Portal, Authentication, and Dynamic Assets have been built and integrated!**
-All customer account actions (login, register, forgot/reset password, profile edit, address management, order history, and wishlist) are now backed by Supabase Auth and the secure Express `/api/customer` routes.
+**As of August 11, 2026**: Blog is now fully wired (admin → API → storefront, homepage + blog.html + blog-single.html), the storefront header nav was reordered, and `product-single.html` went from mostly-static-demo-content to fully live (image, ₹ currency, real description, real Additional Information via the new `specifications` field, real category-based related products) — see section 8 above for the full breakdown. All of this is on branch `claude/project-review-changes-yjarew`, unmerged.
 
 ### Current Status
-- **Interactive Rebase Conflict Resolved**: The Git push conflict regarding `project_export.txt` has been resolved. The interactive rebase is ready to be finalized (`git rebase --continue`) and pushed (`git push origin main`).
+- **Not yet run**: `server/supabase/phase8_product_specifications.sql` hasn't been applied to the live Supabase instance from this session (no DB credentials available there) — run `npm run migrate` or paste it into the Supabase SQL Editor before the new Additional Information admin section will actually persist anything.
 - **Storefront Compilation**: The storefront can be compiled into a production-ready `dist` folder using the custom `node scripts/build-html.js` command.
 
 ### Next Priorities
-1. **End-to-End Testing**: Thoroughly test the customer authentication, profile/password update, address book management, order history retrieval, and wishlist functionality in a staging/dev environment.
-2. **Cloudinary Integration**: Set up Cloudinary keys (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` in `server/.env`) to enable product and banner image uploads in the media library.
-3. **Razorpay Secure Checkout**: Implement and test the Razorpay payment gateway to replace the current Cash-on-Delivery (COD) checkout method.
-4. **Complete Storefront Wiring**: Connect the remaining static storefront pages (e.g. category browsing, blog templates, etc.) to the dynamic Express backend API.
+1. **Merge `claude/project-review-changes-yjarew` into `main`** once verified locally (or keep developing on it — just don't lose track of which branch has the latest work).
+2. **Run the phase8 migration**, then in admin add 2-3 specification rows to a couple of real products and confirm they render on that product's storefront Additional Information tab.
+3. **Cloudinary Integration**: Set up Cloudinary keys (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` in `server/.env`) to enable product and banner image uploads in the media library.
+4. **Razorpay Secure Checkout**: Implement and test the Razorpay payment gateway to replace the current Cash-on-Delivery (COD) checkout method.
+5. **Reviews feature**: product-single.html's Reviews tab is now honest ("No reviews yet") instead of fake, but there's still no real reviews table/submission backend — build one if customer reviews are actually wanted.
+6. **`account-order-details.html` and `order-received.html`** are still static/unwired to real order data (only their `$`→`₹` symbol was fixed on 2026-08-11, not the underlying wiring) — separate task from everything in section 8.
 
 Local dev: `npm run install:all` (root) once per machine, then `npm run dev:full` (root) runs storefront + Express API + admin Vite dev server together. Test login: `admin@ellora.test` / `EllroaAdmin@2026`.
-
-https://github.com/sudarsan-interbiz/IBIZReleases/releases/latest/download/IBZInstaller-latest.exe
