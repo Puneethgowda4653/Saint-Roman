@@ -10,6 +10,7 @@
  * │ Products → tag: featured        │ "Discover Featured Products" grid      │
  * │ Categories (auto)               │ "Explore our latest collections" chips │
  * │ Banners → Promo Banners         │ Bottom special-offer large cards       │
+ * │ Blog Posts (published)          │ "Follow us for daily style" cards      │
  * └─────────────────────────────────┴────────────────────────────────────────┘
  */
 
@@ -488,6 +489,50 @@
         }).catch(noop);
     }
 
+    // ─── 7. Blog ("Follow us for daily style") ───────────────────────────
+
+    function formatDate(value) {
+        if (!value) return '';
+        var d = new Date(value);
+        if (isNaN(d.getTime())) return '';
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function loadBlogPosts() {
+        var items = document.querySelectorAll('.our-blog .post-item');
+        if (!items.length) return;
+
+        get('/blog-posts?limit=' + items.length).then(function (data) {
+            var posts = data.posts || [];
+
+            items.forEach(function (el, i) {
+                if (i >= posts.length) {
+                    var col = el.closest('.col-xl-4');
+                    if (col) col.style.display = 'none';
+                    return;
+                }
+                var post = posts[i];
+                var href = 'blog-single.html?slug=' + encodeURIComponent(post.slug);
+
+                var img = el.querySelector('.post-featured-image img');
+                if (img) {
+                    img.src = post.featured_image_url || 'images/post-1.jpg';
+                    img.alt = post.title || '';
+                }
+
+                var title = el.querySelector('.post-item-content h2 a');
+                if (title && post.title) title.textContent = post.title;
+
+                var dateEl = el.querySelector('.post-item-meta li');
+                if (dateEl) {
+                    dateEl.innerHTML = '<i class="fa-regular fa-calendar-days"></i>' + formatDate(post.published_at || post.created_at);
+                }
+
+                el.querySelectorAll('a').forEach(function (a) { a.href = href; });
+            });
+        }).catch(noop);
+    }
+
     // ─── Boot ───────────────────────────────────────────────────────────
 
     loadCategories();
@@ -496,5 +541,6 @@
     loadFeaturedProducts();
     loadCollections();
     loadPromoBanners();
+    loadBlogPosts();
 
 })();
