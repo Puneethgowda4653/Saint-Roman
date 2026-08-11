@@ -441,17 +441,26 @@ router.post('/orders', async (req, res) => {
   if (itemsError) return res.status(500).json({ error: itemsError.message });
 
   // --- Decrement stock ---
+  // supabaseAdmin.rpc()/.from() return a PostgrestFilterBuilder — it's "thenable" (implements
+  // .then(), so `await` works) but is NOT a real Promise and has no .catch()/.finally(). Chaining
+  // .catch() directly on it (the previous version of both blocks below) throws
+  // "TypeError: ...catch is not a function" the moment it actually runs — this crashed the whole
+  // server process on the first real order that reached this line, since it's outside any
+  // try/catch and Node has no request context left to send an HTTP response to at that point.
+  // Fixed by awaiting normally and checking the returned { error } instead, same "best-effort,
+  // don't fail the order over this" intent, but logged instead of silently swallowed.
   for (const li of lineItems) {
-    await supabaseAdmin.rpc('decrement_stock', { p_variant_id: li.variant_id, p_qty: li.quantity }).catch(() => { });
+    const { error: stockError } = await supabaseAdmin.rpc('decrement_stock', { p_variant_id: li.variant_id, p_qty: li.quantity });
+    if (stockError) console.error(`decrement_stock failed for variant ${li.variant_id}:`, stockError.message);
   }
 
   // --- Increment coupon usage ---
   if (appliedCouponCode) {
-    await supabaseAdmin
+    const { error: couponUpdateError } = await supabaseAdmin
       .from('coupons')
       .update({ usage_count: appliedCouponUsageCount + 1 })
-      .eq('code', appliedCouponCode)
-      .catch(() => { });
+      .eq('code', appliedCouponCode);
+    if (couponUpdateError) console.error(`coupon usage_count update failed for ${appliedCouponCode}:`, couponUpdateError.message);
   }
 
   res.status(201).json({ order: { id: order.id, order_number: order.order_number } });
