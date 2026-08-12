@@ -182,8 +182,12 @@
     // element wired to its own script, not reusable from here). This is a minimal, self-contained
     // one scoped to this page; styling lives in css/custom.css (.ellora-toast) so it matches the
     // site's existing look instead of being inline-styled.
+    //
+    // messageHtml is always a hardcoded string from this file (never user input), so innerHTML is
+    // safe here — it's what lets the "Added to compare" toast include a real, clickable link to
+    // compare.html without a second component.
     var toastTimer = null;
-    function showToast(message) {
+    function showToast(messageHtml) {
         var el = document.getElementById('ellora-toast');
         if (!el) {
             el = document.createElement('div');
@@ -192,7 +196,7 @@
             document.body.appendChild(el);
         }
 
-        el.textContent = message;
+        el.innerHTML = messageHtml;
         el.classList.add('is-visible');
 
         clearTimeout(toastTimer);
@@ -262,8 +266,10 @@
 
     // ─── Compare button ─────────────────────────────────────────────────
     //
-    // Client-side only (js/ellora-compare.js, localStorage) — no backend, and none is planned for
-    // this pass. There's no compare.html to actually view the list yet either; that's a follow-up.
+    // Client-side only (js/ellora-compare.js, localStorage) — no backend. compare.html (js/
+    // compare-page-dynamic.js) is where the list is actually viewed — the toasts below link there.
+    var VIEW_COMPARE_LINK = ' <a href="compare.html">View compare</a>';
+
     function setCompareState(btn, active) {
         btn.classList.toggle('active', active);
         btn.setAttribute('aria-label', active ? 'Remove from compare' : 'Add to compare');
@@ -281,7 +287,7 @@
             if (ElloraCompare.has(product.id)) {
                 ElloraCompare.remove(product.id);
                 setCompareState(btn, false);
-                showToast('Removed from compare');
+                showToast('Removed from compare' + VIEW_COMPARE_LINK);
                 return;
             }
 
@@ -295,9 +301,9 @@
 
             if (result.added) {
                 setCompareState(btn, true);
-                showToast('Added to compare');
+                showToast('Added to compare' + VIEW_COMPARE_LINK);
             } else if (result.reason === 'full') {
-                showToast('Remove an item to compare more (max ' + ElloraCompare.MAX + ')');
+                showToast('Remove an item to compare more (max ' + ElloraCompare.MAX + ')' + VIEW_COMPARE_LINK);
             }
         });
     }

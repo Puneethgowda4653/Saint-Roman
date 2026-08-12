@@ -2,9 +2,9 @@
 // same "state lives in localStorage" approach as html/js/ellora-cart.js, since a compare list has
 // the same "before checkout, nothing needs to be durable across devices" shape as the cart.
 //
-// Only the button on product-single.html reads/writes this for now — there's no compare.html page
-// to actually view the list yet. That's a deliberate scope cut for this pass, not an oversight;
-// building one is a natural follow-up once there's a real product grid to render it with.
+// Written to by the Compare button on product-single.html (js/product-single-dynamic.js) and read
+// by compare.html (js/compare-page-dynamic.js), which fetches full product details for each stored
+// slug and renders the actual comparison table.
 window.ElloraCompare = (function () {
   var KEY = 'ellora_compare';
   var MAX = 4;

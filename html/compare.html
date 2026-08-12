@@ -10,7 +10,7 @@
     <meta name="keywords" content="">
     <meta name="author" content="Awaiken">
     <!-- Page Title -->
-    <title>Ellora - Fashion & Lifestyle Store eCommerce HTML Template</title>
+    <title>Compare Products - Ellora</title>
     <!-- Favicon Icon -->
     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
     <!-- Custom Fonts Css-->
@@ -282,12 +282,11 @@
                 <div class="col-lg-12">
                     <!-- Page Header Box Start -->
                     <div class="page-header-box">
-                        <h1 class="text-anime-style-3" data-cursor="-opaque">Downloads</h1>
+                        <h1 class="text-anime-style-3" data-cursor="-opaque">Compare Products</h1>
                         <nav class="wow fadeInUp">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="./">Home</a></li>
-                                <li class="breadcrumb-item"><a href="account-dashboard.html">My account</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Downloads</li>
+                                <li class="breadcrumb-item active" aria-current="page">Compare Products</li>
                             </ol>
                         </nav>
                     </div>
@@ -298,93 +297,20 @@
     </div>
     <!-- Page Header End -->
 
-    <!-- Page Product Download Start -->
-    <div class="page-product-download light-section">
+    <!-- Page Compare Section Start -->
+    <div class="page-compare">
         <div class="container">
             <div class="row">
-                <div class="col-lg-4">
-                    <!-- Page Single Sidebar Start -->
-                    <div class="page-single-sidebar">
-                        <!-- My Account Sidebar Item Start -->
-                        <div class="my-account-sidebar-item wow fadeInUp">
-                            <ul>
-                                <li><a href="account-dashboard.html"><img src="images/icon-dashboard-primary.svg"
-                                            alt="">Dashboard</a></li>
-                                <li><a href="account-order.html"><img src="images/icon-cart-primary.svg"
-                                            alt="">Orders</a></li>
-                                <!-- <li><a href="account-download.html"><img src="images/icon-downloads-primary.svg"
-                                            alt="">Downloads</a></li> -->
-                                <li><a href="account-address.html"><img src="images/icon-location-primary.svg"
-                                            alt="">Addresses</a></li>
-                                <li><a href="account-details.html"><img src="images/icon-user.svg" alt="">Account
-                                        details</a></li>
-                                <li><a href="account-wishlist.html"><img src="images/icon-wishlist-primary.svg"
-                                            alt="">Wishlist</a></li>
-                                <li><a href="index.html"><img src="images/icon-logout-primary.svg" alt="">Logout</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <!-- My Account Sidebar Item End -->
+                <div class="col-xl-12">
+                    <!-- Live compare table — see js/ellora-compare.js for storage, js/compare-page-dynamic.js for rendering -->
+                    <div id="compare-table-container">
+                        <p class="wow fadeInUp">Loading compare list&hellip;</p>
                     </div>
-                    <!-- Page Single Sidebar End -->
-                </div>
-
-                <div class="col-lg-8">
-                    <!-- Product Download Box Start -->
-                    <div class="product-download-box ">
-                        <!-- Account Order Table Box Start -->
-                        <div class="account-order-table-box wow fadeInUp">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Downloads remaining</th>
-                                        <th>Expires</th>
-                                        <th>Download</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Digital Product 1</td>
-                                        <td>∞</td>
-                                        <td>April 14, 2026</td>
-                                        <td><a href="#" class="btn-default">Single 1</a></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Digital Product 2</td>
-                                        <td>∞</td>
-                                        <td>Jun 27, 2026</td>
-                                        <td><a href="#" class="btn-default">Single 1</a></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Digital Product 3</td>
-                                        <td>∞</td>
-                                        <td>Aug 17, 2026</td>
-                                        <td><a href="#" class="btn-default">Single 1</a></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Digital Product 4</td>
-                                        <td>∞</td>
-                                        <td>Dec 11, 2026</td>
-                                        <td><a href="#" class="btn-default">Single 1</a></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- Account Order Table Box End -->
-
-                        <!-- Account Order Buttton Start -->
-                        <div class="account-order-button wow fadeInUp" data-wow-delay="0.2s">
-                            <a href="products.html" class="btn-default">Back to Shop</a>
-                        </div>
-                        <!-- Account Order Buttton End -->
-                    </div>
-                    <!-- Product Download Box End -->
                 </div>
             </div>
         </div>
     </div>
-    <!-- Page Product Download End -->
+    <!-- Page Compare Section End -->
 
     <!-- Main Footer Start -->
     <footer class="main-footer dark-section">
@@ -517,7 +443,7 @@
     <!-- SmoothScroll -->
     <script src="js/SmoothScroll.js"></script>
     <!-- Isotop js file -->
-    <script src="js/isotope.min.js"></script>
+	<script src="js/isotope.min.js"></script>
     <!-- Parallax js -->
     <script src="js/parallaxie.js"></script>
     <!-- MagicCursor js file -->
@@ -532,9 +458,13 @@
     <script src="js/wow.min.js"></script>
     <!-- Main Custom js file -->
     <script src="js/function.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/account-downloads.js"></script> <!-- swap per page -->
+    <script src="js/currency.js"></script>
+    <script src="js/ellora-cart.js"></script>
+    <script src="js/ellora-compare.js"></script>
+    <script src="js/mega-menu-dynamic.js"></script>
+
+    <!-- Live compare table rendering from the ellora_compare localStorage list -->
+    <script src="js/compare-page-dynamic.js"></script>
 </body>
 
 </html>
