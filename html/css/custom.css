@@ -9477,9 +9477,23 @@ ul.view-order-product-info-list li span {
 	margin: 0 auto;
 }
 
+/* .btn-default's ::before is a 40px arrow-icon square pinned to `right: 4px` regardless of
+   padding — the previous version here only reserved 20px of right padding for it, so the icon
+   (which needs clearance out to ~44px from the edge) sat directly on top of the last few
+   characters of "Add To Cart", clipping them. Fixed by shrinking the icon to match this compact
+   button (below) and giving it enough right padding to actually clear it, plus `white-space:
+   nowrap` so the label can't wrap onto a second line inside the table cell either. */
 .compare-row-cart .btn-default {
-	padding: 10px 20px;
+	padding: 10px 34px 10px 16px;
 	font-size: 13px;
+	white-space: nowrap;
+}
+
+.compare-row-cart .btn-default::before {
+	width: 26px;
+	height: 26px;
+	right: 4px;
+	background-size: 14px auto;
 }
 
 .compare-remove-btn {
