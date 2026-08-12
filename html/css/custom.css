@@ -4321,6 +4321,17 @@ header.main-header .container {
 	filter: brightness(0) invert(1);
 }
 
+/* Persistent "already wishlisted" / "already in compare" state (js/product-single-dynamic.js) —
+   same treatment as the existing :hover rules above, just kept on via a class instead of only
+   while the pointer is over the icon. */
+.product-single-action ul li a.active {
+	background: var(--primary-color);
+}
+
+.product-single-action ul li a.active img {
+	filter: brightness(0) invert(1);
+}
+
 .product-single-details-list ul {
 	list-style: none;
 	padding: 0;
@@ -9339,4 +9350,36 @@ ul.view-order-product-info-list li span {
 	font-weight: 400 !important;
 	color: #666 !important;
 	text-transform: none !important;
+}
+
+/****************************************/
+/***      Ellora Toast Notification    ***/
+/****************************************/
+/* Not part of the numbered index above — added later for the product-single.html Wishlist/
+   Compare buttons (js/product-single-dynamic.js), which needed a success confirmation and found
+   no existing shared toast component anywhere in this codebase to reuse. */
+
+.ellora-toast {
+	position: fixed;
+	left: 50%;
+	bottom: 40px;
+	z-index: 9999;
+	transform: translate(-50%, 20px);
+	background: var(--primary-color);
+	color: #fff;
+	padding: 14px 24px;
+	border-radius: 8px;
+	font-size: 14px;
+	font-weight: 500;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+	max-width: calc(100% - 40px);
+	text-align: center;
+}
+
+.ellora-toast.is-visible {
+	opacity: 1;
+	transform: translate(-50%, 0);
 }
