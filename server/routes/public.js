@@ -237,11 +237,38 @@ router.get('/tags', async (req, res) => {
 
 router.get('/site-content', async (req, res) => {
   const [{ data: settings }, { data: banners }] = await Promise.all([
-    supabaseAdmin.from('settings').select('site_title, announcement_text, footer_copyright_text, maintenance_mode').single(),
+    supabaseAdmin.from('settings').select('site_title, announcement_text, footer_copyright_text, maintenance_mode, testimonial_bg_image_url').single(),
     supabaseAdmin.from('banners').select('id, title, subtitle, link_url, image_url, badge_text, placement').eq('is_active', true).order('sort_order', { ascending: true }),
   ]);
 
   res.json({ settings: settings || {}, banners: banners || [] });
+});
+
+// GET /api/public/settings — the subset of the settings singleton safe to hand to the storefront.
+// Only field actually consumed today is testimonial_bg_image_url (homepage-dynamic-sections.js /
+// testimonials-page-dynamic.js), but this mirrors /site-content's column list so both stay in sync.
+router.get('/settings', async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('settings')
+    .select('site_title, announcement_text, footer_copyright_text, maintenance_mode, testimonial_bg_image_url')
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ settings: data || {} });
+});
+
+// GET /api/public/testimonials — active testimonials only, in admin-controlled sort_order.
+// Backs both the homepage "Voices of our happy customers" slider and the standalone
+// testimonials.html grid.
+router.get('/testimonials', async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('testimonials')
+    .select('id, quote, author_name, author_role, author_image_url, rating')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ testimonials: data || [] });
 });
 
 // New endpoint: homepage offer banners only

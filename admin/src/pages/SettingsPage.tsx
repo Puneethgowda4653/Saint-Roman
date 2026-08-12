@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useApiResource } from '@/hooks/useSupabase'
 import { apiFetch } from '@/lib/api'
 import { toast } from 'sonner'
+import { ImageUpload } from '@/components/shared/ImageUpload'
 
 interface Settings {
   site_title?: string
@@ -14,6 +15,7 @@ interface Settings {
   announcement_text?: string
   footer_copyright_text?: string
   maintenance_mode?: boolean
+  testimonial_bg_image_url?: string
 }
 
 export function SettingsPage() {
@@ -93,6 +95,17 @@ export function SettingsPage() {
                 onChange={(e) => setForm({ ...settings, footer_copyright_text: e.target.value })}
                 placeholder="Copyright © 2026 All Rights Reserved."
               />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Testimonials section background</Label>
+              <ImageUpload
+                value={settings.testimonial_bg_image_url ?? ''}
+                onChange={(url) => setForm({ ...settings, testimonial_bg_image_url: url })}
+                folder="ellora/settings"
+              />
+              <p className="text-xs text-muted-foreground">
+                Background for the homepage "Voices of our happy customers" section. Leave empty to use the default.
+              </p>
             </div>
             <div className="flex items-center gap-2 rounded-md border border-destructive/30 p-3">
               <input

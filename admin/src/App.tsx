@@ -20,6 +20,7 @@ import { WarehousePage } from '@/pages/WarehousePage'
 import { SupportPage } from '@/pages/SupportPage'
 import { AuditLogsPage } from '@/pages/AuditLogsPage'
 import { BannersPage } from '@/pages/BannersPage'
+import { TestimonialsPage } from '@/pages/TestimonialsPage'
 import { TeamPage } from '@/pages/TeamPage'
 import { InfluencersPage } from '@/pages/InfluencersPage'
 import { MarketingPage } from '@/pages/MarketingPage'
@@ -53,6 +54,7 @@ function App() {
               <Route path="/support" element={<SupportPage />} />
               <Route path="/audit-logs" element={<AuditLogsPage />} />
               <Route path="/banners" element={<BannersPage />} />
+              <Route path="/testimonials" element={<TestimonialsPage />} />
               <Route path="/team" element={<TeamPage />} />
               <Route path="/influencers" element={<InfluencersPage />} />
               <Route path="/marketing" element={<MarketingPage />} />

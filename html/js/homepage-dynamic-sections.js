@@ -11,6 +11,7 @@
  * │ Categories (auto)               │ "Explore our latest collections" chips │
  * │ Banners → Promo Banners         │ Bottom special-offer large cards       │
  * │ Blog Posts (published)          │ "Follow us for daily style" cards      │
+ * │ Testimonials + Settings         │ "Voices of our happy customers"        │
  * └─────────────────────────────────┴────────────────────────────────────────┘
  */
 
@@ -532,6 +533,146 @@
         }).catch(noop);
     }
 
+    // ─── 8. Testimonials ("Voices of our happy customers") ──────────────
+    //
+    // Three things driven off the same /testimonials + /settings fetch:
+    //   - the .testimonial-slider swiper slides (cloned from the first slide, one per testimonial)
+    //   - the 3 .satisfy-client-images avatars (first 3 testimonials)
+    //   - the star-rating counter/label (average of every testimonial's rating)
+    // Falls back to the static markup untouched if there are no active testimonials yet, same as
+    // every other section here.
+
+    function avgRating(testimonials) {
+        var sum = testimonials.reduce(function (s, t) { return s + (Number(t.rating) || 0); }, 0);
+        return sum / testimonials.length;
+    }
+
+    function buildTestimonialSlide(template, testimonial) {
+        var slide = template.cloneNode(true);
+
+        var quote = slide.querySelector('.testimonial-item-content p');
+        if (quote) quote.textContent = '“' + testimonial.quote + '”';
+
+        var img = slide.querySelector('.testimonial-author-image img');
+        if (img) {
+            img.src = testimonial.author_image_url || 'images/author-1.jpg';
+            img.alt = testimonial.author_name || '';
+        }
+
+        var name = slide.querySelector('.testimonial-author-content h2');
+        if (name) name.textContent = testimonial.author_name || '';
+
+        var role = slide.querySelector('.testimonial-author-content p');
+        if (role) role.textContent = testimonial.author_role || '';
+
+        return slide;
+    }
+
+    function applyTestimonialSlider(testimonials) {
+        var wrapper = document.querySelector('.testimonial-slider .swiper-wrapper');
+        if (!wrapper) return;
+
+        var swiperEl = document.querySelector('.testimonial-slider .swiper');
+        // Swiper 6+ stores the live instance directly on the element it was initialized on
+        // (js/function.js already ran a Swiper() on this element, loop:true included, by the
+        // time this file loads — see the <script> order in index.html). Loop mode clones extra
+        // slides into the wrapper at init, so destroy() has to run BEFORE reading a template
+        // slide out of the wrapper — destroy(true, true) is what removes those clones and
+        // restores the wrapper to its original 3-slide markup; grabbing a "first slide" before
+        // that could just as easily grab one of Swiper's own duplicated clones instead of the
+        // real authored one. Same "destroy the plugin instance before mutating, then rebuild it"
+        // approach the Isotope product grid above uses.
+        if (swiperEl && swiperEl.swiper) {
+            swiperEl.swiper.destroy(true, true);
+        }
+
+        var template = wrapper.querySelector('.swiper-slide');
+        if (!template) return;
+
+        wrapper.innerHTML = '';
+        testimonials.forEach(function (t) {
+            wrapper.appendChild(buildTestimonialSlide(template, t));
+        });
+
+        if (typeof Swiper !== 'undefined' && swiperEl) {
+            new Swiper('.testimonial-slider .swiper', {
+                slidesPerView: 1,
+                speed: 1500,
+                spaceBetween: 30,
+                loop: true,
+                autoplay: {
+                    delay: 5000,
+                },
+                pagination: {
+                    el: '.testimonial-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.testimonial-button-next',
+                    prevEl: '.testimonial-button-prev',
+                },
+                breakpoints: {
+                    768: {
+                        slidesPerView: 2,
+                    },
+                }
+            });
+        }
+
+        if (typeof WOW !== 'undefined') new WOW().init();
+    }
+
+    function applySatisfyClientImages(testimonials) {
+        var avatars = document.querySelectorAll('.satisfy-client-images .satisfy-client-image:not(.add-more) img');
+        avatars.forEach(function (img, i) {
+            if (i >= testimonials.length) return;
+            var t = testimonials[i];
+            if (t.author_image_url) {
+                img.src = t.author_image_url;
+                img.alt = t.author_name || '';
+            }
+        });
+    }
+
+    function applyTestimonialRating(testimonials) {
+        var box = document.querySelector('.testimonial-client-box-content');
+        if (!box || testimonials.length === 0) return;
+
+        var rating = avgRating(testimonials).toFixed(1);
+
+        var counter = box.querySelector('.counter');
+        if (counter) counter.textContent = rating;
+
+        var label = box.querySelector('p');
+        if (label) label.textContent = rating + ' / 5 Ratings';
+    }
+
+    function applyTestimonialBackground(settings) {
+        var section = document.querySelector('.our-testimonials');
+        if (!section || !settings || !settings.testimonial_bg_image_url) return;
+        section.style.backgroundImage = 'url("' + settings.testimonial_bg_image_url + '")';
+    }
+
+    function loadTestimonials() {
+        if (!document.querySelector('.our-testimonials')) return;
+
+        Promise.all([
+            get('/testimonials'),
+            get('/settings')
+        ]).then(function (results) {
+            var testimonials = results[0].testimonials || [];
+            var settings = results[1].settings || {};
+
+            if (testimonials.length > 0) {
+                applyTestimonialSlider(testimonials);
+                applySatisfyClientImages(testimonials);
+                applyTestimonialRating(testimonials);
+            }
+
+            applyTestimonialBackground(settings);
+        }).catch(noop);
+    }
+
     // ─── Boot ───────────────────────────────────────────────────────────
 
     loadCategories();
@@ -541,5 +682,6 @@
     loadCollections();
     loadPromoBanners();
     loadBlogPosts();
+    loadTestimonials();
 
 })();
