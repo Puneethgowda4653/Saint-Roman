@@ -1,22 +1,9 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
+import { loadCustomersWithStats } from '../lib/customerStats.js';
 
 const router = Router();
-
-// Compute each customer's order_count + lifetime_value from real orders (same join the
-// Customers module uses), then evaluate every segment's rules against that live snapshot.
-async function loadCustomersWithStats() {
-  const { data, error } = await supabaseAdmin
-    .from('customers')
-    .select('id, name, email, phone, orders(id, total)');
-  if (error) throw new Error(error.message);
-  return data.map(({ orders, ...c }) => ({
-    ...c,
-    order_count: orders.length,
-    lifetime_value: orders.reduce((sum, o) => sum + Number(o.total), 0),
-  }));
-}
 
 function matches(customer, segment) {
   return (
