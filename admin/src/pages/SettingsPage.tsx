@@ -16,6 +16,7 @@ interface Settings {
   footer_copyright_text?: string
   maintenance_mode?: boolean
   testimonial_bg_image_url?: string
+  low_stock_alert_phone?: string
 }
 
 export function SettingsPage() {
@@ -105,6 +106,19 @@ export function SettingsPage() {
               />
               <p className="text-xs text-muted-foreground">
                 Background for the homepage "Voices of our happy customers" section. Leave empty to use the default.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="low_stock_alert_phone">Low stock alert WhatsApp number</Label>
+              <Input
+                id="low_stock_alert_phone"
+                value={settings.low_stock_alert_phone ?? ''}
+                onChange={(e) => setForm({ ...settings, low_stock_alert_phone: e.target.value })}
+                placeholder="e.g. 919876543210"
+              />
+              <p className="text-xs text-muted-foreground">
+                Sent a message here whenever a variant crosses into low/out-of-stock. Requires the WhatsApp
+                integration to be configured (server/.env) — this field is inert until then.
               </p>
             </div>
             <div className="flex items-center gap-2 rounded-md border border-destructive/30 p-3">

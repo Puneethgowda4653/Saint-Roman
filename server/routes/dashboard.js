@@ -1,10 +1,9 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
+import { computeStockStatus } from '../lib/stockStatus.js';
 
 const router = Router();
-
-const LOW_STOCK_THRESHOLD = 10;
 
 // Module 1, Executive Dashboard — pure aggregation over data that already exists (Orders,
 // Customers, Products, Inventory, Returns). No new tables, same approach as Finance.
@@ -20,7 +19,7 @@ router.get('/summary', requireAuth, async (req, res) => {
     supabaseAdmin.from('orders').select('status, total'),
     supabaseAdmin.from('customers').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('products').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-    supabaseAdmin.from('product_variants').select('id, size, color, stock_quantity, product:products(name)'),
+    supabaseAdmin.from('product_variants').select('id, size, color, stock_quantity, reserved_quantity, low_stock_threshold, product:products(name)'),
     supabaseAdmin
       .from('orders')
       .select('id, order_number, customer_name, total, status, created_at')
@@ -45,7 +44,7 @@ router.get('/summary', requireAuth, async (req, res) => {
   }
 
   const lowStockVariants = variants
-    .filter((v) => v.stock_quantity <= LOW_STOCK_THRESHOLD)
+    .filter((v) => computeStockStatus(v) !== 'in_stock')
     .sort((a, b) => a.stock_quantity - b.stock_quantity)
     .slice(0, 5)
     .map((v) => ({

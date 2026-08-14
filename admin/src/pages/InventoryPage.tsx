@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Search, Package, MoreHorizontal, History, PencilLine, X, Download, Inbox } from 'lucide-react'
+import { Search, Package, MoreHorizontal, History, PencilLine, SlidersHorizontal, X, Download, Inbox } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -59,10 +59,15 @@ interface Variant {
   price: number
   stock_quantity: number
   reserved_quantity: number
+  low_stock_threshold: number | null
   available: number
   status: StockStatus
   product: Product | null
 }
+
+// Mirrors DEFAULT_LOW_STOCK_THRESHOLD in server/lib/stockStatus.js — shown as the effective
+// threshold when a variant has no custom low_stock_threshold set.
+const DEFAULT_LOW_STOCK_THRESHOLD = 10
 
 interface InventoryResponse {
   variants: Variant[]
@@ -247,6 +252,11 @@ export function InventoryPage() {
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
 
+  // Threshold dialog
+  const [thresholdTarget, setThresholdTarget] = useState<Variant | null>(null)
+  const [thresholdValue, setThresholdValue] = useState('')
+  const [savingThreshold, setSavingThreshold] = useState(false)
+
   // History drawer
   const [historyVariant, setHistoryVariant] = useState<Variant | null>(null)
   const [history, setHistory] = useState<Adjustment[] | null>(null)
@@ -299,6 +309,30 @@ export function InventoryPage() {
       toast.error(err instanceof Error ? err.message : 'Failed to update stock')
     } finally {
       setSaving(false)
+    }
+  }
+
+  function openThreshold(variant: Variant) {
+    setThresholdTarget(variant)
+    setThresholdValue(variant.low_stock_threshold != null ? String(variant.low_stock_threshold) : '')
+  }
+
+  async function handleSaveThreshold(e: FormEvent) {
+    e.preventDefault()
+    if (!thresholdTarget) return
+    setSavingThreshold(true)
+    try {
+      await apiFetch(`/inventory/${thresholdTarget.id}/threshold`, {
+        method: 'PUT',
+        body: JSON.stringify({ low_stock_threshold: thresholdValue === '' ? null : Number(thresholdValue) }),
+      })
+      toast.success('Alert threshold saved')
+      setThresholdTarget(null)
+      refetch()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save threshold')
+    } finally {
+      setSavingThreshold(false)
     }
   }
 
@@ -444,9 +478,14 @@ export function InventoryPage() {
                   <TableCell>{variant.stock_quantity}</TableCell>
                   <TableCell>{variant.reserved_quantity}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={STATUS_META[variant.status].className}>
-                      {variant.available} · {STATUS_META[variant.status].label}
-                    </Badge>
+                    <div className="flex flex-col gap-0.5">
+                      <Badge variant="outline" className={STATUS_META[variant.status].className}>
+                        {variant.available} · {STATUS_META[variant.status].label}
+                      </Badge>
+                      <span className="text-[11px] text-muted-foreground">
+                        Alert below {variant.low_stock_threshold ?? DEFAULT_LOW_STOCK_THRESHOLD}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -457,6 +496,10 @@ export function InventoryPage() {
                         <DropdownMenuItem onClick={() => openAdjust(variant)}>
                           <PencilLine />
                           Adjust stock
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openThreshold(variant)}>
+                          <SlidersHorizontal />
+                          Set alert threshold
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setHistoryVariant(variant)}>
                           <History />
@@ -516,6 +559,37 @@ export function InventoryPage() {
             <DialogFooter>
               <Button type="submit" disabled={saving}>
                 {saving ? 'Saving…' : 'Apply'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Alert threshold dialog ── */}
+      <Dialog open={thresholdTarget !== null} onOpenChange={(next) => !next && setThresholdTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Low stock alert threshold — {thresholdTarget?.product?.name}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveThreshold} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="threshold">Alert when stock on hand falls to or below</Label>
+              <Input
+                id="threshold"
+                type="number"
+                min={0}
+                placeholder={`Default (${DEFAULT_LOW_STOCK_THRESHOLD})`}
+                value={thresholdValue}
+                onChange={(e) => setThresholdValue(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Leave empty to use the store default ({DEFAULT_LOW_STOCK_THRESHOLD} units). Set this higher for
+                fast-moving SKUs you don't want to run out of, lower for slow ones.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={savingThreshold}>
+                {savingThreshold ? 'Saving…' : 'Save threshold'}
               </Button>
             </DialogFooter>
           </form>
