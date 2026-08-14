@@ -30,6 +30,7 @@ import uploadRoutes from './routes/upload.js';
 import mediaRoutes from './routes/media.js';
 import tagsRoutes from './routes/tags.js';
 import customerAccountRoutes from './routes/customer.js';
+import whatsappRoutes from './routes/whatsapp.js';
 const app = express();
 const PORT = process.env.PORT || 4000;
 const CORS_ORIGIN = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',');
@@ -50,7 +51,10 @@ app.use(cors({
 }));
 // Limit raised from the 100kb default so base64-encoded image uploads (/api/upload/image) fit.
 // Base64 inflates raw bytes by ~33%, so 25mb here covers photos up to ~18mb raw.
-app.use(express.json({ limit: '25mb' }));
+// `verify` stashes the raw request body on req.rawBody — needed by routes/whatsapp.js to check
+// Meta's X-Hub-Signature-256 header, which has to be computed over the exact bytes received, not
+// the re-serialized (and potentially differently-formatted) parsed JSON.
+app.use(express.json({ limit: '25mb', verify: (req, res, buf) => { req.rawBody = buf; } }));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
@@ -85,6 +89,7 @@ app.use('/api/tags', tagsRoutes);
 
 // after the other app.use lines:
 app.use('/api/customer', customerAccountRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 app.use((err, req, res, next) => {
   console.error(err);
   if (err.type === 'entity.too.large') {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Inbox, MoreHorizontal, Eye, Trash2, Mail, Phone, X } from 'lucide-react'
+import { Search, Inbox, MoreHorizontal, Eye, Trash2, Mail, Phone, X, MessageCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -79,11 +79,28 @@ interface Ticket {
   created_at: string
   updated_at: string
   resolved_at: string | null
+  source: 'contact_form' | 'whatsapp'
+  wa_conversation_id: string | null
 }
 
 interface TicketsResponse {
   tickets: Ticket[]
   counts: Record<string, number>
+}
+
+interface TranscriptMessage {
+  direction: 'in' | 'out'
+  message_type: string
+  payload: Record<string, unknown> & { type?: string; bodyText?: string; text?: { body?: string }; interactive?: { list_reply?: { title?: string }; button_reply?: { title?: string } } }
+  created_at: string
+}
+
+function transcriptText(msg: TranscriptMessage) {
+  if (msg.direction === 'out') return msg.payload.bodyText ?? '[message]'
+  const p = msg.payload
+  if (p.type === 'text') return p.text?.body ?? ''
+  if (p.type === 'interactive') return p.interactive?.list_reply?.title ?? p.interactive?.button_reply?.title ?? '[selection]'
+  return `[${p.type ?? 'message'}]`
 }
 
 // ─── Small pure helpers ─────────────────────────────────────────────────
@@ -125,6 +142,16 @@ function StatCard({ label, value, accent }: { label: string; value: number; acce
       </CardHeader>
       <CardContent className={cn('text-xl font-semibold', accent)}>{value}</CardContent>
     </Card>
+  )
+}
+
+function SourceBadge({ source }: { source: Ticket['source'] }) {
+  if (source !== 'whatsapp') return null
+  return (
+    <Badge variant="outline" className="border-transparent bg-green-500/10 text-green-600 dark:text-green-400">
+      <MessageCircle className="size-3" />
+      WhatsApp
+    </Badge>
   )
 }
 
@@ -176,6 +203,8 @@ export function SupportPage() {
   const [drawerTicketId, setDrawerTicketId] = useState<string | null>(null)
   const [drawerNote, setDrawerNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
+  const [transcript, setTranscript] = useState<TranscriptMessage[] | null>(null)
+  const [transcriptLoading, setTranscriptLoading] = useState(false)
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchInput), 300)
@@ -200,6 +229,18 @@ export function SupportPage() {
   useEffect(() => {
     setDrawerNote(drawerTicket?.internal_note ?? '')
   }, [drawerTicket?.id, drawerTicket?.internal_note])
+
+  useEffect(() => {
+    if (!drawerTicketId || drawerTicket?.source !== 'whatsapp') {
+      setTranscript(null)
+      return
+    }
+    setTranscriptLoading(true)
+    apiFetch(`/support/${drawerTicketId}/transcript`)
+      .then((res: { messages: TranscriptMessage[] }) => setTranscript(res.messages))
+      .catch(() => setTranscript([]))
+      .finally(() => setTranscriptLoading(false))
+  }, [drawerTicketId, drawerTicket?.source])
 
   function resetFilters() {
     setActiveStatus('')
@@ -249,7 +290,7 @@ export function SupportPage() {
     <div className="flex flex-col gap-4 pb-24">
       <div>
         <h1 className="text-2xl font-semibold">Support Tickets</h1>
-        <p className="text-sm text-muted-foreground">Every message from the storefront's contact form, in one queue.</p>
+        <p className="text-sm text-muted-foreground">Every message from the storefront's contact form and WhatsApp, in one queue.</p>
       </div>
 
       {/* ── Stat tiles ── */}
@@ -361,8 +402,11 @@ export function SupportPage() {
                   )}
                 >
                   <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-mono text-xs font-medium">{ticket.ticket_number}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-xs font-medium">{ticket.ticket_number}</span>
+                        <SourceBadge source={ticket.source} />
+                      </div>
                       <span className="text-xs text-muted-foreground">{formatRelativeTime(ticket.created_at)}</span>
                     </div>
                   </TableCell>
@@ -467,6 +511,7 @@ export function SupportPage() {
                   <Badge variant="outline" className={PRIORITY_META[drawerTicket.priority].className}>
                     {PRIORITY_META[drawerTicket.priority].label} priority
                   </Badge>
+                  <SourceBadge source={drawerTicket.source} />
                 </div>
 
                 <div>
@@ -531,6 +576,32 @@ export function SupportPage() {
                     </Select>
                   </div>
                 </div>
+
+                {drawerTicket.source === 'whatsapp' && (
+                  <div>
+                    <h3 className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">WhatsApp transcript</h3>
+                    {transcriptLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+                    {!transcriptLoading && transcript && transcript.length === 0 && (
+                      <p className="text-sm text-muted-foreground">No messages logged.</p>
+                    )}
+                    {!transcriptLoading && transcript && transcript.length > 0 && (
+                      <div className="flex max-h-64 flex-col gap-1.5 overflow-y-auto rounded-lg border p-3">
+                        {transcript.map((msg, i) => (
+                          <div key={i} className={cn('flex', msg.direction === 'in' ? 'justify-start' : 'justify-end')}>
+                            <div
+                              className={cn(
+                                'max-w-[80%] rounded-lg px-2.5 py-1.5 text-xs whitespace-pre-wrap',
+                                msg.direction === 'in' ? 'bg-muted' : 'bg-primary/10'
+                              )}
+                            >
+                              {transcriptText(msg)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div>
                   <h3 className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Internal note</h3>

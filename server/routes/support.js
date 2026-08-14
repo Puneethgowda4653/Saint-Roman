@@ -65,6 +65,29 @@ router.put('/:id', requireAuth, async (req, res) => {
   res.json({ ticket: data });
 });
 
+// Read-only transcript for a WhatsApp-originated ticket (source: 'whatsapp') — powers the "View
+// WhatsApp transcript" section in the admin ticket detail drawer. 404s (as {messages: []}, not an
+// error) for contact-form tickets, which have no wa_conversation_id.
+router.get('/:id/transcript', requireAuth, async (req, res) => {
+  const { data: ticket, error: ticketError } = await supabaseAdmin
+    .from('support_tickets')
+    .select('wa_conversation_id')
+    .eq('id', req.params.id)
+    .maybeSingle();
+
+  if (ticketError) return res.status(500).json({ error: ticketError.message });
+  if (!ticket?.wa_conversation_id) return res.json({ messages: [] });
+
+  const { data, error } = await supabaseAdmin
+    .from('wa_messages')
+    .select('direction, message_type, payload, created_at')
+    .eq('conversation_id', ticket.wa_conversation_id)
+    .order('created_at', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ messages: data });
+});
+
 router.delete('/:id', requireAuth, async (req, res) => {
   const { error } = await supabaseAdmin.from('support_tickets').delete().eq('id', req.params.id);
   if (error) return res.status(400).json({ error: error.message });
