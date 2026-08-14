@@ -290,6 +290,14 @@ router.get('/banners', async (req, res) => {
   res.json({ banners: data || [] });
 });
 
+// Mirrors generateOrderNumber() in server/routes/orders.js — same shape, different prefix, so a
+// ticket number reads at a glance like an order number does.
+function generateTicketNumber() {
+  const stamp = Date.now().toString(36).toUpperCase();
+  const rand = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `TCK-${stamp}-${rand}`;
+}
+
 router.post('/support-tickets', async (req, res) => {
   const { name, email, phone, subject, message } = req.body;
 
@@ -306,6 +314,7 @@ router.post('/support-tickets', async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('support_tickets')
     .insert({
+      ticket_number: generateTicketNumber(),
       customer_id: customerId,
       customer_name: name,
       customer_email: email || null,
@@ -317,7 +326,7 @@ router.post('/support-tickets', async (req, res) => {
     .single();
 
   if (error) return res.status(400).json({ error: error.message });
-  res.status(201).json({ ticket: { id: data.id } });
+  res.status(201).json({ ticket: { id: data.id, ticket_number: data.ticket_number } });
 });
 
 router.post('/coupons/validate', async (req, res) => {
