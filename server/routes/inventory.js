@@ -4,25 +4,70 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', requireAuth, async (req, res) => {
-  const { data, error } = await supabaseAdmin
-    .from('product_variants')
-    .select('id, sku, size, color, price, stock_quantity, reserved_quantity, product:products(id, name)')
-    .order('stock_quantity', { ascending: true });
+// Same threshold already used by dashboard.js/notifications.js for their own low-stock signals —
+// kept in sync by hand (no shared package between route files in this project).
+const LOW_STOCK_THRESHOLD = 10;
 
+function stockStatus(variant) {
+  const available = variant.stock_quantity - variant.reserved_quantity;
+  if (available <= 0) return 'out_of_stock';
+  if (variant.stock_quantity <= LOW_STOCK_THRESHOLD) return 'low_stock';
+  return 'in_stock';
+}
+
+// Applies every filter except `stock_status` (used separately so tab counts reflect the other
+// active filters) — same split as applyFilters() in server/routes/orders.js.
+function applyFilters(query, { search, category }) {
+  if (category) query = query.eq('products.category_id', category);
+  if (search) {
+    const term = `%${search}%`;
+    query = query.or(`sku.ilike.${term},products.name.ilike.${term}`);
+  }
+  return query;
+}
+
+const VARIANT_SELECT = 'id, sku, size, color, price, stock_quantity, reserved_quantity, products!inner(id, name, image_url, category_id, category:categories(id, name))';
+
+// Renames the PostgREST embed key (products, plural — required unaliased so `.eq`/`.or` filters
+// above can reference it) back to a clean singular `product` for the response, so the frontend
+// isn't stuck naming a single joined product "products".
+function decorate(variant) {
+  const { products: product, ...rest } = variant;
+  return { ...rest, product, available: variant.stock_quantity - variant.reserved_quantity, status: stockStatus(variant) };
+}
+
+router.get('/', requireAuth, async (req, res) => {
+  const { search, category, stock_status } = req.query;
+  const filterParams = { search, category };
+
+  let query = applyFilters(supabaseAdmin.from('product_variants').select(VARIANT_SELECT), filterParams).order('stock_quantity', { ascending: true });
+
+  const { data, error } = await query;
   if (error) return res.status(500).json({ error: error.message });
-  res.json({ variants: data });
+
+  let variants = (data || []).map(decorate);
+
+  const counts = { all: variants.length, in_stock: 0, low_stock: 0, out_of_stock: 0 };
+  for (const v of variants) counts[v.status] += 1;
+
+  if (stock_status) variants = variants.filter((v) => v.status === stock_status);
+
+  res.json({ variants, counts });
 });
 
 router.get('/:variantId/history', requireAuth, async (req, res) => {
-  const { data, error } = await supabaseAdmin
-    .from('inventory_adjustments')
-    .select('*')
-    .eq('variant_id', req.params.variantId)
-    .order('created_at', { ascending: false });
+  const [{ data: adjustments, error }, { data: usersData, error: usersError }] = await Promise.all([
+    supabaseAdmin.from('inventory_adjustments').select('*').eq('variant_id', req.params.variantId).order('created_at', { ascending: false }),
+    supabaseAdmin.auth.admin.listUsers(),
+  ]);
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json({ adjustments: data });
+  if (usersError) return res.status(500).json({ error: usersError.message });
+
+  const emailById = new Map(usersData.users.map((u) => [u.id, u.email]));
+  const decorated = (adjustments || []).map((a) => ({ ...a, actor_email: a.created_by ? emailById.get(a.created_by) || null : null }));
+
+  res.json({ adjustments: decorated });
 });
 
 router.post('/adjust', requireAuth, async (req, res) => {
