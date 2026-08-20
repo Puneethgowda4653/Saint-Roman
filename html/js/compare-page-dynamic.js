@@ -90,11 +90,18 @@
             return '<td class="compare-col">' + category + '</td>';
         }
         if (row === 'cart') {
-            var variant = product && product.product_variants && product.product_variants[0];
-            if (!variant) {
+            // Compare has no colour/size picker of its own — it can only safely add a product
+            // straight to cart when there's exactly one real variant to add (no ambiguity about
+            // which colour/size the shopper meant). Anything else sends them to the product page,
+            // same as picking a specific variant would require there anyway.
+            var variants = (product && product.product_variants) || [];
+            if (variants.length === 1) {
+                return '<td class="compare-col"><button type="button" class="btn-default" data-action="add-to-cart" data-id="' + item.id + '">Add To Cart</button></td>';
+            }
+            if (variants.length === 0) {
                 return '<td class="compare-col"><button type="button" class="btn-default" disabled>Unavailable</button></td>';
             }
-            return '<td class="compare-col"><button type="button" class="btn-default" data-action="add-to-cart" data-id="' + item.id + '">Add To Cart</button></td>';
+            return '<td class="compare-col"><a href="' + href + '" class="btn-default">Choose Options</a></td>';
         }
         if (row === 'remove') {
             return '<td class="compare-col"><a href="#" class="compare-remove-btn" data-action="remove" data-id="' + item.id + '"><i class="fa-regular fa-trash-can"></i> Remove</a></td>';
@@ -196,7 +203,12 @@
             var items = ElloraCompare.get();
             var item = items.filter(function (i) { return i.id === id; })[0];
             var product = item && productCache[item.slug];
-            var variant = product && product.product_variants && product.product_variants[0];
+            var variants = (product && product.product_variants) || [];
+            // Only ever reachable when buildProductCell rendered a real "Add To Cart" button,
+            // which only happens for a product with exactly one variant — see buildProductCell's
+            // 'cart' row above. Multi-variant products get a "Choose Options" link instead, so
+            // there's never an ambiguous product_variants[0] guess to make here.
+            var variant = variants.length === 1 ? variants[0] : null;
             if (!variant) return;
 
             EllroaCart.add({

@@ -35,6 +35,12 @@
     var slug = new URLSearchParams(window.location.search).get('slug');
     var currentProduct = null;
 
+    // Currently selected real variant (set by renderVariantPicker below, updated whenever the
+    // shopper changes the colour/size radios). Add To Cart must use this — never
+    // product_variants[0] — otherwise every product behaves as if only its first admin-entered
+    // variant exists, and the on-page colour/size selection has no effect on what's purchased.
+    var selectedVariant = null;
+
     document.getElementById('add-to-cart-btn').addEventListener('click', async function (e) {
         e.preventDefault();
         if (!currentProduct) return;
@@ -43,9 +49,13 @@
         var session = await ElloraAuth.requireLogin();
         if (!session) return;
 
-        var variant = currentProduct.product_variants && currentProduct.product_variants[0];
+        var variant = selectedVariant;
         if (!variant) {
-            alert('This product has no purchasable variant yet.');
+            alert('Please select the available colour/size combination.');
+            return;
+        }
+        if (variant.stock_quantity <= 0) {
+            alert('This colour/size combination is out of stock.');
             return;
         }
 
@@ -62,6 +72,95 @@
 
         window.location.href = 'cart.html';
     });
+
+    // ─── Variant picker (colour / size) ────────────────────────────────
+    //
+    // product-single.html shipped with 5 static colour swatches and 6 static sizes that were the
+    // same on every product page regardless of what the admin actually entered for that product
+    // (product_variants: {id, size, color, price, stock_quantity} — server/routes/public.js). This
+    // renders only the colour/size values that actually exist on this product's variants (e.g. a
+    // product with a single "M / Yellow" variant shows exactly one size button and one swatch,
+    // both pre-selected) and keeps `selectedVariant` above in sync with whatever's clicked.
+    function uniqueValues(variants, key) {
+        var values = variants.map(function (v) { return v[key]; }).filter(Boolean);
+        return values.filter(function (v, i) { return values.indexOf(v) === i; });
+    }
+
+    function findVariant(variants, color, size) {
+        return variants.filter(function (v) {
+            return (color === null || v.color === color) && (size === null || v.size === size);
+        })[0] || null;
+    }
+
+    function renderVariantPicker(product) {
+        var variants = product.product_variants || [];
+        var colors = uniqueValues(variants, 'color');
+        var sizes = uniqueValues(variants, 'size');
+
+        var colorSection = document.getElementById('product-color-section');
+        var colorOptions = document.getElementById('product-color-options');
+        var sizeSection = document.getElementById('product-size-section');
+        var sizeOptions = document.getElementById('product-size-options');
+        var message = document.getElementById('product-variant-message');
+
+        var selectedColor = colors[0] || null;
+        var selectedSize = sizes[0] || null;
+
+        function updateSelection() {
+            selectedVariant = findVariant(variants, selectedColor, selectedSize);
+            if (!message) return;
+            if (!selectedVariant) {
+                message.textContent = 'This combination is not available.';
+            } else if (selectedVariant.stock_quantity <= 0) {
+                message.textContent = 'Out of stock.';
+            } else {
+                message.textContent = '';
+            }
+        }
+
+        if (colorSection && colorOptions) {
+            if (colors.length === 0) {
+                colorSection.style.display = 'none';
+                colorOptions.innerHTML = '';
+            } else {
+                colorSection.style.display = '';
+                colorOptions.innerHTML = colors.map(function (color, i) {
+                    var safeColor = EllroaText.escapeHtml(color);
+                    return '<input type="radio" name="color" id="product-color-' + i + '"' + (i === 0 ? ' checked' : '') + '>' +
+                        '<label for="product-color-' + i + '" class="color-variant" style="background:' + safeColor + '" title="' + safeColor + '"></label>';
+                }).join('');
+
+                colors.forEach(function (color, i) {
+                    document.getElementById('product-color-' + i).addEventListener('change', function () {
+                        selectedColor = color;
+                        updateSelection();
+                    });
+                });
+            }
+        }
+
+        if (sizeSection && sizeOptions) {
+            if (sizes.length === 0) {
+                sizeSection.style.display = 'none';
+                sizeOptions.innerHTML = '';
+            } else {
+                sizeSection.style.display = '';
+                sizeOptions.innerHTML = sizes.map(function (size, i) {
+                    var safeSize = EllroaText.escapeHtml(size);
+                    return '<li><input type="radio" id="product-size-' + i + '" name="Size" value="' + safeSize + '"' + (i === 0 ? ' checked' : '') + '><label for="product-size-' + i + '">' + safeSize + '</label></li>';
+                }).join('');
+
+                sizes.forEach(function (size, i) {
+                    document.getElementById('product-size-' + i).addEventListener('change', function () {
+                        selectedSize = size;
+                        updateSelection();
+                    });
+                });
+            }
+        }
+
+        updateSelection();
+    }
 
     // Single real image per product (products.image_url) — repeated across every slide in both
     // sliders, matching the "single image_url, not a gallery" data shape. Only overwritten when
@@ -338,6 +437,7 @@
             document.getElementById('product-categories-detail').textContent = product.category ? product.category.name : 'Uncategorized';
 
             renderImages(product);
+            renderVariantPicker(product);
             renderDescriptionTab(product);
             renderAdditionalInfo(product);
             renderReviews();

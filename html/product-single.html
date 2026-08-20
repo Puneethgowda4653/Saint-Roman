@@ -348,38 +348,22 @@
                                 <!-- Product Single Price End -->
                                 
                                 <!-- Product Single Item Color Start -->
-                                <div class="product-single-item-color wow fadeInUp" data-wow-delay="0.2s">
+                                <!-- Colour options are generated from the real product_variants data by
+                                     js/product-single-dynamic.js (renderVariantPicker) — hidden entirely
+                                     if the product has no colour variation. -->
+                                <div class="product-single-item-color wow fadeInUp" data-wow-delay="0.2s" id="product-color-section" style="display:none;">
                                     <h3>Colour :</h3>
-                                    <div class="product-item-variant-colors">
-                                        <input type="radio" name="color" id="black">
-                                        <label for="black" class="color-variant black"></label>
-                                        
-                                        <input type="radio" name="color" id="gray">
-                                        <label for="gray" class="color-variant gray"></label>
-                                        
-                                        <input type="radio" name="color" id="light" checked>
-                                        <label for="light" class="color-variant light"></label>
-                                        
-                                        <input type="radio" name="color" id="accent">
-                                        <label for="accent" class="color-variant accent"></label>
-                                        
-                                        <input type="radio" name="color" id="pink">
-                                        <label for="pink" class="color-variant pink"></label>
-                                    </div>
+                                    <div class="product-item-variant-colors" id="product-color-options"></div>
                                 </div>
                                 <!-- Product Single Item Color End -->
-                                
+
                                 <!-- Product Single Item Size Start -->
-                                <div class="product-single-item-size wow fadeInUp" data-wow-delay="0.4s">
+                                <!-- Size options are generated from the real product_variants data by
+                                     js/product-single-dynamic.js (renderVariantPicker) — hidden entirely
+                                     if the product has no size variation. -->
+                                <div class="product-single-item-size wow fadeInUp" data-wow-delay="0.4s" id="product-size-section" style="display:none;">
                                     <h3>Choose Your Size</h3>
-                                    <ul>
-                                        <li><input type="radio" id="XXS" name="Size" value="XXS" checked><label for="XXS">XXS</label></li>
-                                        <li><input type="radio" id="XS" name="Size" value="XS"><label for="XS">XS</label></li>
-                                        <li><input type="radio" id="S" name="Size" value="S"><label for="S">S</label></li>
-                                        <li><input type="radio" id="M" name="Size" value="M"><label for="M">M</label></li>
-                                        <li><input type="radio" id="XXL" name="Size" value="XXL"><label for="XXL">XXL</label></li>
-                                        <li><input type="radio" id="XL" name="Size" value="XL"><label for="XL">XL</label></li>
-                                    </ul>
+                                    <ul id="product-size-options"></ul>
                                 </div>
                                 <!-- Product Single Item Size End -->
 
@@ -393,6 +377,9 @@
                                     <div class="product-single-content-btn">
                                         <a href="#" id="add-to-cart-btn" class="btn-default">Add To cart</a>
                                     </div>
+                                    <!-- Filled by renderVariantPicker() in js/product-single-dynamic.js when the
+                                         selected colour/size combination is out of stock or doesn't exist. -->
+                                    <span id="product-variant-message" style="display:block; margin-top:10px; color:var(--error-color);"></span>
                                     <div class="product-single-action">
                                         <ul>
                                             <li><a href="#" id="product-wishlist-btn" aria-label="Add to wishlist"><img src="images/icon-wishlist-primary.svg" alt=""></a></li>
