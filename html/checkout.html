@@ -663,10 +663,16 @@
     <script src="js/ellora-cart.js"></script>
     <script src="js/checkout-coupon-autoapply.js"></script>
     <script src="js/mega-menu-dynamic.js"></script>
+    <!-- Supabase + auth — checkout now requires a logged-in customer (ElloraAuth.requireLogin() below) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="js/auth.js"></script>
 
     <!-- Live checkout — renders the cart, submits the real order to server/routes/public.js POST /orders -->
     <script>
-        (function () {
+        (async function () {
+            var session = await ElloraAuth.requireLogin();
+            if (!session) return;
+
             var API_BASE = 'http://localhost:4000/api/public';
             var itemsContainer = document.getElementById('live-order-items');
             var subtotalEl = document.getElementById('checkout-subtotal');
@@ -770,7 +776,10 @@
 
                 fetch(API_BASE + '/orders', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + session.access_token,
+                    },
                     body: JSON.stringify({
                         customer_name: fname + ' ' + lname,
                         customer_email: email,

@@ -169,7 +169,7 @@
         });
     }
 
-    container.addEventListener('click', function (e) {
+    container.addEventListener('click', async function (e) {
         var actionEl = e.target.closest('[data-action]');
         if (!actionEl) return;
         e.preventDefault();
@@ -189,6 +189,10 @@
         }
 
         if (actionEl.dataset.action === 'add-to-cart') {
+            // Cart requires a real account, same as product-single.html's Add to Cart button.
+            var session = await ElloraAuth.requireLogin();
+            if (!session) return;
+
             var items = ElloraCompare.get();
             var item = items.filter(function (i) { return i.id === id; })[0];
             var product = item && productCache[item.slug];

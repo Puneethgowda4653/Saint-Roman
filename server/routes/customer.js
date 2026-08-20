@@ -8,7 +8,7 @@ const router = Router();
 // row via `customers.auth_user_id`. Deliberately NOT reusing server/middleware/auth.js's
 // requireAuth as-is: that middleware also reads `profiles.role`, which doesn't apply to
 // customers and would be a wasted/irrelevant lookup here.
-async function requireCustomer(req, res, next) {
+export async function requireCustomer(req, res, next) {
     const authHeader = req.headers.authorization ?? '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 

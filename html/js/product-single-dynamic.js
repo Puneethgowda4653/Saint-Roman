@@ -35,9 +35,13 @@
     var slug = new URLSearchParams(window.location.search).get('slug');
     var currentProduct = null;
 
-    document.getElementById('add-to-cart-btn').addEventListener('click', function (e) {
+    document.getElementById('add-to-cart-btn').addEventListener('click', async function (e) {
         e.preventDefault();
         if (!currentProduct) return;
+
+        // Cart requires a real account, same as Wishlist below — no guest cart.
+        var session = await ElloraAuth.requireLogin();
+        if (!session) return;
 
         var variant = currentProduct.product_variants && currentProduct.product_variants[0];
         if (!variant) {

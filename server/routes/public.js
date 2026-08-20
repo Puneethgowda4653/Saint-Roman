@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { validateCoupon } from '../lib/coupons.js';
 import { createTicket } from '../lib/supportTickets.js';
+import { requireCustomer } from './customer.js';
 
 const router = Router();
 
@@ -331,10 +332,12 @@ function generateOrderNumber() {
   return `ELL-${stamp}-${rand}`;
 }
 
-// Real checkout, unauthenticated. Never trusts client-supplied prices or product names —
-// looks up each variant server-side by id and prices the order from that. Cash-on-delivery
-// only (no payment gateway configured), so there's no payment step here beyond recording the order.
-router.post('/orders', async (req, res) => {
+// Real checkout — requires a logged-in customer (requireCustomer, imported from customer.js;
+// same bearer-token check every /api/customer/* route already uses). Never trusts client-supplied
+// prices or product names — looks up each variant server-side by id and prices the order from
+// that. Cash-on-delivery only (no payment gateway configured), so there's no payment step here
+// beyond recording the order.
+router.post('/orders', requireCustomer, async (req, res) => {
   const { customer_name, customer_email, customer_phone, shipping_address, notes, items, coupon_code } = req.body;
 
   if (!customer_name || !customer_phone || !Array.isArray(items) || items.length === 0) {
@@ -389,44 +392,12 @@ router.post('/orders', async (req, res) => {
 
   const total = Math.max(0, subtotal - discountAmount);
 
-  // --- Customer upsert ---
-  // customers.email has a PARTIAL unique index (phase4_customers.sql: `where email is not null`).
-  // A plain select-then-insert keyed on phone (the original version) can miss a real match —
-  // phone has no unique constraint, so a phone-only lookup can find >1 row and silently return no
-  // match — then collide on the email constraint on insert: the
-  // "duplicate key value violates unique constraint 'customers_email_idx'" error this caused.
-  // .upsert(..., { onConflict: 'email' }) (tried here first) does NOT work as the fix: Postgres
-  // requires an ON CONFLICT target to exactly match a constraint/index, including its predicate,
-  // and a partial index needs that predicate specified in the conflict clause — which
-  // supabase-js's upsert() has no way to express. That's a real Postgres limitation, not
-  // something a retry fixes, hence: "there is no unique or exclusion constraint matching the ON
-  // CONFLICT specification". So: back to select-then-insert (no ON CONFLICT involved at all),
-  // but keyed on the column that's actually constrained (email) instead of phone, with phone only
-  // as a fallback when email is missing (the server itself doesn't require it, only the form does).
-  let customerId = null;
-  {
-    let existingCustomer = null;
-    if (customer_email) {
-      const { data } = await supabaseAdmin.from('customers').select('id').eq('email', customer_email).limit(1).maybeSingle();
-      existingCustomer = data;
-    }
-    if (!existingCustomer) {
-      const { data } = await supabaseAdmin.from('customers').select('id').eq('phone', customer_phone).limit(1).maybeSingle();
-      existingCustomer = data;
-    }
-
-    if (existingCustomer) {
-      customerId = existingCustomer.id;
-    } else {
-      const { data: newCustomer, error: customerError } = await supabaseAdmin
-        .from('customers')
-        .insert({ name: customer_name, email: customer_email || null, phone: customer_phone, address: shipping_address || null })
-        .select('id')
-        .single();
-      if (customerError) return res.status(500).json({ error: customerError.message });
-      customerId = newCustomer.id;
-    }
-  }
+  // Customer is already resolved and verified by requireCustomer above (req.customer, matched via
+  // customers.auth_user_id) — no more guest lookup-or-create. This also removes the exact block
+  // that used to cause the "duplicate key value violates unique constraint 'customers_email_idx'"
+  // bug (a phone-only lookup could miss an existing row and collide on insert): there's nothing
+  // left here to collide, since the customer already exists.
+  const customerId = req.customer.id;
 
   // --- Create the order ---
   const { data: order, error: orderError } = await supabaseAdmin
