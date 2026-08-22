@@ -315,6 +315,18 @@ Root cause confirmed by directly reading the files (not just an agent summary): 
 
 ---
 
+### 22. Real Saint Roman brand copy on about.html (Done ✅ — 2026-08-22, branch `claude/support-ticket-design-q3s0xb`, not yet merged to `main`, no migration needed)
+
+The user supplied a doc (`About_US.docx`) that maps real Saint Roman brand copy directly onto `about.html`'s existing section/tag structure (title, topbar, page header, About Us mission/vision, Our Philosophy accordion, Our History timeline, Our Expertise counters, a "Product Pillars" replacement for the static Our Team section, Why Choose Us, FAQs, footer newsletter/copyright) — same pattern as the earlier legal-policy-page and Corporate & Compliance content swaps (sections 18-19), just for the about page this time. Read via manual XML extraction (no pandoc/soffice in this sandbox — same `<w:t(?:\s[^>]*)?>` regex fix noted in section 18 applied again).
+
+- Replaced every static "Ellora"/generic-fashion placeholder string the doc covered with the real Saint Roman intimates/loungewear copy, tag-for-tag: `<title>`, topbar notice, header contact email (`support@saintromanfashion.com`), page header h1/breadcrumb, the About Us mission/vision items and image captions, the 4-item Philosophy accordion, the 3-card History timeline (dropped the template's fabricated 2015/2017/2019 dates since the doc's copy doesn't use them), the 4 Expertise counters (re-numbered to 70%+/100%/3/24-7 per the doc, not the template's 50K+/10K+/500+/24-7), Why Choose Us's 4 features, all 5 FAQ Q&As, and the footer newsletter heading/subtext + copyright line.
+- **One structural call beyond pure text swap**: doc section 7 repurposes the "Our Team" section (3 team-member cards — photo, name, job title, social-media icon row) into 3 "Product Pillar" category cards (Women's/Men's/Kids' lines). A social-icon row (Pinterest/Twitter/Facebook/Instagram) makes no sense under a product-category card, so those 3 `<ul>`s were removed rather than left pointing nowhere; the card links (`href="#"`) were pointed at `products.html` instead, since they're no longer dead per-person profile links. Photos are unchanged (still the template's stock headshots — no product-category images were supplied to replace them with).
+- **Deliberately left alone / out of scope**: the header phone number (doc's own mapping left this field blank — no value given), and the demo `ellora-*.mp4` video URLs used by the video-play button and "Why Choose" background video (the doc didn't cover these, and no replacement video assets exist).
+- **Flagged, not done**: the topbar notice ("10% off all watches" → now Saint Roman copy) and footer newsletter/copyright text are duplicated verbatim across every other storefront page today — this change only touched `about.html`, so the site now has two different topbar/footer strings depending on which page you're on. Worth a sitewide rollout later (same shape as section 19's footer-link rollout) if the user wants consistency, but not done here since the doc was scoped to about.html only.
+- **Verification**: `<div>`/`</div>` count balanced (205/205) after all edits; `git diff` reviewed section-by-section against the doc's own tag mapping. **Not verified**: no live browser/server in this sandbox to actually load the page and see it rendered — do that before considering this fully proven, especially the new colour-swatch-free "Product Pillar" cards' layout without the social-icon row.
+
+---
+
 ## 🔨 BUILD PLAN — 8 ESSENTIAL MODULES (First Release)
 
 ### Phase 1: Foundation
