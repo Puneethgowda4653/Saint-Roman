@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     var session = await ElloraAuth.requireLogin();
     if (!session) return;
 
-    var orderId = new URLSearchParams(window.location.search).get('id');
+    var orderId = ElloraRoute.param(/^\/account\/orders\/([^/?#]+)/, 'id');
     var box = document.querySelector('.view-order-content-box');
     if (!box) return;
 

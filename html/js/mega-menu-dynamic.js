@@ -17,22 +17,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.mega-menu-link a').forEach(function (link) {
         var tag = tagMap[link.textContent.trim().toLowerCase()];
-        if (tag) link.href = 'products.html?tag=' + tag;
+        if (tag) link.href = '/tag/' + tag;
     });
 
     document.querySelectorAll('.mega-menu-item a').forEach(function (link) {
-        if (link.getAttribute('href') !== 'products.html') return;
+        if (link.getAttribute('href') !== '/products') return;
         var item = link.closest('.mega-menu-item');
         if (!item) return;
         var titleEl = item.querySelector('.mega-menu-item-content h2 a') || item.querySelector('.mega-menu-item-content h2');
         if (!titleEl) return;
         var title = titleEl.textContent.trim().toLowerCase();
         if (title === 'new arrivals') {
-            link.href = 'products.html?tag=new-arrival';
-            if (titleEl.tagName === 'A') titleEl.href = 'products.html?tag=new-arrival';
+            link.href = '/tag/new-arrival';
+            if (titleEl.tagName === 'A') titleEl.href = '/tag/new-arrival';
         } else if (title === 'summer collection') {
-            link.href = 'products.html?tag=summer';
-            if (titleEl.tagName === 'A') titleEl.href = 'products.html?tag=summer';
+            link.href = '/tag/summer';
+            if (titleEl.tagName === 'A') titleEl.href = '/tag/summer';
         }
     });
 

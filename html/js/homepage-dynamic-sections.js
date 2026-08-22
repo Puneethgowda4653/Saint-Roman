@@ -37,12 +37,12 @@
 
     function productLink(product) {
         return product.slug
-            ? 'product-single.html?slug=' + encodeURIComponent(product.slug)
+            ? '/product/' + encodeURIComponent(product.slug)
             : '#';
     }
 
     function categoryLink(cat) {
-        return 'products.html?category=' + encodeURIComponent(cat.slug);
+        return '/category/' + encodeURIComponent(cat.slug);
     }
 
     function noop() { }
@@ -512,7 +512,7 @@
                     return;
                 }
                 var post = posts[i];
-                var href = 'blog-single.html?slug=' + encodeURIComponent(post.slug);
+                var href = '/blog/' + encodeURIComponent(post.slug);
 
                 var img = el.querySelector('.post-featured-image img');
                 if (img) {

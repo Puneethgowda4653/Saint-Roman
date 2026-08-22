@@ -3,8 +3,7 @@
 // dynamic-page pattern as mega-menu-dynamic.js / homepage-dynamic-sections.js.
 (function () {
     var API_BASE = 'http://localhost:4000/api/public';
-    var params = new URLSearchParams(window.location.search);
-    var slug = params.get('slug');
+    var slug = ElloraRoute.param(/^\/blog\/([^/?#]+)/, 'slug');
 
     var titleEl = document.getElementById('blog-post-title');
     var dateEl = document.getElementById('blog-post-date');

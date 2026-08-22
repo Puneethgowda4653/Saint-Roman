@@ -54,10 +54,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                 '<div class="wishlist-item">' +
                 '<div class="wishlist-item-image-content">' +
                 '<div class="wishlist-item-image">' +
-                '<figure><a href="product-single.html?slug=' + (item.slug || '') + '"><img src="' + imgSrc + '" alt="' + (item.name || '') + '"></a></figure>' +
+                '<figure><a href="/product/' + (item.slug || '') + '"><img src="' + imgSrc + '" alt="' + (item.name || '') + '"></a></figure>' +
                 '</div>' +
                 '<div class="wishlist-item-info-content">' +
-                '<div class="wishlist-item-title"><p><a href="product-single.html?slug=' + (item.slug || '') + '">' + (item.name || '') + '</a></p></div>' +
+                '<div class="wishlist-item-title"><p><a href="/product/' + (item.slug || '') + '">' + (item.name || '') + '</a></p></div>' +
                 '<div class="wishlist-item-price">' + priceHtml + '</div>' +
                 '</div>' +
                 '</div>' +

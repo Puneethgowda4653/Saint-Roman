@@ -7,7 +7,7 @@
 // regardless of what was actually ordered.
 (function () {
     var API_BASE = 'http://localhost:4000/api/public';
-    var orderNumber = new URLSearchParams(window.location.search).get('order');
+    var orderNumber = ElloraRoute.param(/^\/order-confirmation\/([^/?#]+)/, 'order');
 
     var headingEl = document.getElementById('order-number');
     var numberEl = document.getElementById('order-number-value');

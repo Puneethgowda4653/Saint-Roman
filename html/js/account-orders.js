@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             '<td>' + status + '</td>' +
             '<td>' + itemCount + ' item' + (itemCount !== 1 ? 's' : '') + '</td>' +
             '<td>' + EllroaCurrency.format(o.total) + '</td>' +
-            '<td><a href="account-order-details.html?id=' + o.id + '" class="account-order-table-btn">View</a></td>';
+            '<td><a href="/account/orders/' + o.id + '" class="account-order-table-btn">View</a></td>';
         tbody.appendChild(tr);
     });
 });

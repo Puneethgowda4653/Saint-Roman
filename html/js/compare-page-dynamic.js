@@ -67,7 +67,7 @@
     // One <td> per product column, keyed by row so buildTable() can assemble each row across
     // every column without repeating the "which column is this" logic per row.
     function buildProductCell(row, item, product) {
-        var href = 'product-single.html?slug=' + encodeURIComponent(item.slug);
+        var href = '/product/' + encodeURIComponent(item.slug);
 
         if (row === 'image') {
             var img = (product && product.image_url) || item.image || 'images/product-image-1.png';

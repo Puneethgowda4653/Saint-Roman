@@ -32,7 +32,7 @@
 //      as js/ellora-cart.js. See initWishlistButton()/initCompareButton() below.
 (function () {
     var API_BASE = 'http://localhost:4000/api/public';
-    var slug = new URLSearchParams(window.location.search).get('slug');
+    var slug = ElloraRoute.param(/^\/product\/([^/?#]+)/, 'slug');
     var currentProduct = null;
 
     // Currently selected real variant (set by renderVariantPicker below, updated whenever the
@@ -247,7 +247,7 @@
                         return;
                     }
                     var p = related[i];
-                    var href = 'product-single.html?slug=' + encodeURIComponent(p.slug);
+                    var href = '/product/' + encodeURIComponent(p.slug);
 
                     var img = card.querySelector('.product-item-image img');
                     if (img) {

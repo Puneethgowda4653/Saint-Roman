@@ -197,7 +197,7 @@ export function BannersPage() {
                   id="b-link"
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
-                  placeholder="products.html?category=womens-fashion"
+                  placeholder="/category/womens-fashion"
                 />
               </div>
               <div className="flex flex-col gap-2">
