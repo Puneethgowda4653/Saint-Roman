@@ -426,7 +426,12 @@
                                     var sidebarEl = document.getElementById('live-filter-sidebar');
                                     var headingEl = document.getElementById('products-heading');
                                     var paginationEl = document.querySelector('.product-category-result-pagination');
-                                    var loadMoreLink = document.querySelector('.product-learn-more-btn a');
+                                    // .product-learn-more-btn sits later in the page than this inline script, so
+                                    // querying for it here (like the elements above) would always return null —
+                                    // this script runs synchronously the moment the parser reaches it, before the
+                                    // rest of the body is parsed. Re-queried once the full DOM exists instead (see
+                                    // DOMContentLoaded below), which is also where its click handler gets attached.
+                                    var loadMoreLink = null;
                                     var sortEl = document.getElementById('sorting_list');
 
                                     var PAGE_SIZE = 12;
@@ -435,17 +440,26 @@
                                         'Low_to_High': 'price_asc',
                                         'High_to_Low': 'price_desc'
                                     };
+                                    var REVERSE_SORT_MAP = {
+                                        'price_asc': 'Low_to_High',
+                                        'price_desc': 'High_to_Low'
+                                    };
 
+                                    // Query params reflect the full filter/sort/pagination state (not just
+                                    // category/tag, which live in the path instead) so a shared or bookmarked
+                                    // products URL reproduces exactly what was on screen — same idea as Amazon's
+                                    // /s?rh=...&sort=... or Flipkart's /pr?sid=...&sort=... search/listing URLs.
                                     var initialParams = new URLSearchParams(window.location.search);
                                     var initialCategory = ElloraRoute.param(/^\/category\/([^/?#]+)/, 'category');
                                     var initialTag = ElloraRoute.param(/^\/tag\/([^/?#]+)/, 'tag');
+                                    var initialOffset = parseInt(initialParams.get('page'), 10);
                                     var state = {
                                         category: initialCategory || null,
                                         tags: (initialTag || '').split(',').filter(Boolean),
-                                        colors: [],
-                                        sizes: [],
-                                        sort: null,
-                                        offset: 0,
+                                        colors: (initialParams.get('color') || '').split(',').filter(Boolean),
+                                        sizes: (initialParams.get('size') || '').split(',').filter(Boolean),
+                                        sort: REVERSE_SORT_MAP[initialParams.get('sort')] ? initialParams.get('sort') : null,
+                                        offset: isNaN(initialOffset) ? 0 : Math.max(0, initialOffset) * PAGE_SIZE,
                                     };
 
                                     var facets = null;
@@ -554,6 +568,8 @@
 
                                         if (state.colors.length) params.set('color', state.colors.join(','));
                                         if (state.sizes.length) params.set('size', state.sizes.join(','));
+                                        if (state.sort) params.set('sort', state.sort);
+                                        if (state.offset > 0) params.set('page', Math.floor(state.offset / PAGE_SIZE) + 1);
 
                                         var qs = params.toString();
                                         var newUrl = pathname + (qs ? '?' + qs : '');
@@ -655,18 +671,22 @@
                                         });
                                     }
 
-                                    if (loadMoreLink) {
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        loadMoreLink = document.querySelector('.product-learn-more-btn a');
+                                        if (!loadMoreLink) return;
                                         loadMoreLink.addEventListener('click', function (e) {
                                             e.preventDefault();
                                             state.offset += PAGE_SIZE;
+                                            syncUrl();
                                             loadProducts(true);
                                         });
-                                    }
+                                    });
 
                                     if (sortEl) {
                                         sortEl.addEventListener('change', function () {
                                             state.sort = SORT_MAP[sortEl.value] || null;
                                             state.offset = 0;
+                                            syncUrl();
                                             loadProducts(false);
                                         });
                                     }
@@ -680,6 +700,10 @@
                                         .catch(function () {
                                             sidebarEl.innerHTML = '<p>Could not load filters.</p>';
                                         });
+
+                                    // Reflect a restored ?sort= back into the dropdown so the UI matches the
+                                    // state a shared/bookmarked URL actually asked for.
+                                    if (sortEl && state.sort) sortEl.value = REVERSE_SORT_MAP[state.sort];
 
                                     loadProducts(false);
 
