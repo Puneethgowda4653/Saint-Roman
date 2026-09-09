@@ -1,0 +1,159 @@
+services:
+  # Express API (server/) — powers both the storefront's /api calls and the admin panel.
+  - type: web
+    name: saint-roman-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://saint-roman-storefront.onrender.com,https://saint-roman-admin.onrender.com
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+
+  # Storefront — static HTML template, served as-is from html/ (same as local `npm run dev`).
+  - type: web
+    name: saint-roman-storefront
+    runtime: static
+    buildCommand: "true"
+    staticPublishPath: html
+    routes:
+      - type: rewrite
+        source: /product/*
+        destination: /product-single.html
+      - type: rewrite
+        source: /category/*
+        destination: /products.html
+      - type: rewrite
+        source: /tag/*
+        destination: /products.html
+      - type: rewrite
+        source: /blog/*
+        destination: /blog-single.html
+      - type: rewrite
+        source: /account/orders/*
+        destination: /account-order-details.html
+      - type: rewrite
+        source: /order-confirmation/*
+        destination: /order-received.html
+      - type: rewrite
+        source: /products
+        destination: /products.html
+      - type: rewrite
+        source: /404
+        destination: /404.html
+      - type: rewrite
+        source: /about
+        destination: /about.html
+      - type: rewrite
+        source: /account-address
+        destination: /account-address.html
+      - type: rewrite
+        source: /account-addresses
+        destination: /account-addresses.html
+      - type: rewrite
+        source: /account-dashboard
+        destination: /account-dashboard.html
+      - type: rewrite
+        source: /account-details
+        destination: /account-details.html
+      - type: rewrite
+        source: /account-download
+        destination: /account-download.html
+      - type: rewrite
+        source: /account-order
+        destination: /account-order.html
+      - type: rewrite
+        source: /account-order-details
+        destination: /account-order-details.html
+      - type: rewrite
+        source: /account-wishlist
+        destination: /account-wishlist.html
+      - type: rewrite
+        source: /blog-single
+        destination: /blog-single.html
+      - type: rewrite
+        source: /cancellation-policy
+        destination: /cancellation-policy.html
+      - type: rewrite
+        source: /cart
+        destination: /cart.html
+      - type: rewrite
+        source: /checkout
+        destination: /checkout.html
+      - type: rewrite
+        source: /compare
+        destination: /compare.html
+      - type: rewrite
+        source: /contact
+        destination: /contact.html
+      - type: rewrite
+        source: /corporate-compliance
+        destination: /corporate-compliance.html
+      - type: rewrite
+        source: /delivery-policy
+        destination: /delivery-policy.html
+      - type: rewrite
+        source: /faqs
+        destination: /faqs.html
+      - type: rewrite
+        source: /forgot-password
+        destination: /forgot-password.html
+      - type: rewrite
+        source: /login
+        destination: /login.html
+      - type: rewrite
+        source: /order-received
+        destination: /order-received.html
+      - type: rewrite
+        source: /privacy-policy
+        destination: /privacy-policy.html
+      - type: rewrite
+        source: /product-single
+        destination: /product-single.html
+      - type: rewrite
+        source: /refund-return
+        destination: /refund-return.html
+      - type: rewrite
+        source: /reset-password
+        destination: /reset-password.html
+      - type: rewrite
+        source: /term-condition
+        destination: /term-condition.html
+      - type: rewrite
+        source: /testimonials
+        destination: /testimonials.html
+
+  # Admin panel (admin/) — Vite + React SPA.
+  - type: web
+    name: saint-roman-admin
+    runtime: static
+    rootDir: admin
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_API_BASE_URL
+        value: https://saint-roman-api.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
